@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Scanner;
@@ -22,13 +23,34 @@ public class ConsoleUI implements Serializable {
         ConsoleUI console = new ConsoleUI();
         console.GameLogic = new Game(5, 7, 10);
 
-        for(MenuOption menuOption : MenuOption.values()){
-            System.out.println(menuOption);
+        boolean exitGame = false;
+
+        MenuOption userSelection = null;
+
+        while(!exitGame) {
+            userSelection = getUserMenuSelection();
+
+            exitGame = userSelection.makeAction(console.GameLogic);
         }
 
-        console.inScanner.nextLine();
+        System.out.println("Thank you for playing\nGoodbye!");
+    }
 
-        console.startGame();
+    private static MenuOption getUserMenuSelection() {
+        MenuOption userSelection = null;
+        boolean goodSelection = false;
+
+        while(!goodSelection){
+            showMenuOptions();
+        }
+
+        return userSelection;
+    }
+
+    private static void showMenuOptions() {
+        for (MenuOption menuOption : MenuOption.values()) {
+            System.out.println(menuOption);
+        }
     }
 
     private void startGame() {
@@ -246,4 +268,110 @@ public class ConsoleUI implements Serializable {
 
         return playerChoice;
     }
+
+
+    private enum MenuOption {
+        LOAD_XML {
+            @Override
+            public String toString() {
+                return "1)Load XML File";
+            }
+
+            boolean makeAction(Game game){
+
+                return false;
+            }
+        },
+        START {
+            @Override
+            public String toString() {
+                return "2)Start Game";
+            }
+
+            boolean makeAction(Game game){
+
+                return false;
+            }
+        },
+        SETTINGS {
+            @Override
+            public String toString() {
+                return "3)Show Game Settings";
+            }
+
+            boolean makeAction(Game game){
+
+                return false;
+            }
+        },
+        MAKE_MOVE{
+            @Override
+            public String toString() {
+                return "4)Make Move";
+            }
+
+            boolean makeAction(Game game){
+
+                return game.isGameOver();
+            }
+        },
+        HISTORY{
+            @Override
+            public String toString() {
+                return "5)Show Turn History";
+            }
+
+            boolean makeAction(Game game){
+
+                return false;
+            }
+        },
+        UNDO {
+            @Override
+            public String toString() {
+                return "6)Undo Last Turn";
+            }
+
+            boolean makeAction(Game game){
+
+
+                return false;
+            }
+        },
+        SAVE {
+            @Override
+            public String toString() {
+                return "7)Save Game";
+            }
+
+            boolean makeAction(Game game){
+
+                return false;
+            }
+        },
+        LOAD{
+            @Override
+            public String toString() {
+                return "8)Load Game";
+            }
+
+            boolean makeAction(Game game){
+
+                return game.isGameOver();
+            }
+        },
+        EXIT {
+            @Override
+            public String toString() {
+                return "9)Exit Game";
+            }
+
+            boolean makeAction(Game game){
+                return true;
+            }
+        };
+
+        abstract boolean makeAction(Game game);
+    }
+
 }
