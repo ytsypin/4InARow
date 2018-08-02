@@ -67,4 +67,12 @@ public class Board implements Serializable {
     public void applyTurn(Turn currTurn, int currPlayerMark) {
         boardTiles[currTurn.row][currTurn.col] = currPlayerMark;
     }
+
+    public void nullifyCell(int row, int col) {
+        boardTiles[row][col] = ' ';
+    }
+
+    public int getTileSymbol(int row, int col){
+        return boardTiles[row][col];
+    }
 }

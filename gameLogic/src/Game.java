@@ -7,10 +7,12 @@ public class Game implements Serializable {
     private Board gameBoard;
     private Player player1 = null;
     private Player player2 = null;
-    private boolean isActive;
+    private boolean gameSettingsHaveBeenLoaded;
+    private boolean isActive = false;
     private List<Turn> turnHistory;
     private Player currentPlayer = null;
-    private boolean gameOver;
+    private boolean gameOver = false;
+    private boolean winnerFound = false;
     private static int noMove = -1;
 
     private long startTime;
@@ -26,8 +28,8 @@ public class Game implements Serializable {
     public Game(int N, int rows, int cols) {
         this.N = N;
         gameBoard = new Board(rows, cols);
-        isActive = false;
         startTime = System.currentTimeMillis();
+        gameSettingsHaveBeenLoaded = true;
         turnHistory = new LinkedList<>();
     }
 
@@ -135,6 +137,7 @@ public class Game implements Serializable {
 
     private void implementTurn(int col) {
         // presume the column given is exact
+        int firstCheckedTile = 1;
         int row = getFirstOpenRow(col);
         Turn currTurn = new Turn(row, col);
         int currPlayerSymbol = currentPlayer.equals(player1) ? 1 : 2;
@@ -143,14 +146,25 @@ public class Game implements Serializable {
 
         currentPlayer.addTurnPlayed();
 
-        checkIfGameOver(row, col);
+        boolean checkedCells[][] = new boolean[gameBoard.getRows()][gameBoard.getCols()];
+
+        for(int i = 0; i < gameBoard.getRows(); i++){
+            for(int j =0; j < gameBoard.getCols(); j++){
+                checkedCells[i][j] = false;
+            }
+        }
+        checkForWinner(row, col, firstCheckedTile, currPlayerSymbol, checkedCells);
 
         if(!gameOver) {
-            if (currentPlayer.equals(player1)) {
-                currentPlayer = player2;
-            } else {
-                currentPlayer = player1;
-            }
+            changeCurrentPlayer();
+        }
+    }
+
+    private void changeCurrentPlayer() {
+        if (currentPlayer.equals(player1)) {
+            currentPlayer = player2;
+        } else {
+            currentPlayer = player1;
         }
     }
 
@@ -186,7 +200,73 @@ public class Game implements Serializable {
         }
     }
 
-    private void checkIfGameOver(int row, int col) {
-        // TODO
+    private void checkForWinner(int row, int col, int currCount, int currPlayerSymbol, boolean[][] checkedCells) {
+        checkedCells[row][col] = true;
+        int empty = 0;
+        if(currCount == N){
+            winnerFound = true;
+            gameOver = true;
+        } else {
+            if(row > empty){
+                if(!checkedCells[row-1][col] && gameBoard.getTileSymbol(row-1, col) == currPlayerSymbol){
+                    checkForWinner(row-1, col, ++currCount, currPlayerSymbol, checkedCells);
+                }
+            }
+
+            if(row < gameBoard.getRows()-1){
+                if(!checkedCells[row+1][col] && gameBoard.getTileSymbol(row+1, col) == currPlayerSymbol){
+                    checkForWinner(row+1, col, ++currCount, currPlayerSymbol, checkedCells);
+                }
+            }
+
+            if (col > empty) { // col > 0
+                if(!checkedCells[row][col-1] && gameBoard.getTileSymbol(row, col-1) == currPlayerSymbol){
+                    checkForWinner(row, col-1, ++currCount, currPlayerSymbol, checkedCells);
+                }
+
+                if(row > empty){
+                    if(!checkedCells[row-1][col-1] && gameBoard.getTileSymbol(row-1, col-1) == currPlayerSymbol){
+                        checkForWinner(row-1, col-1, ++currCount, currPlayerSymbol, checkedCells);
+                    }
+                }
+
+                if(row < gameBoard.getRows()-1){
+                    if(!checkedCells[row+1][col-1] && gameBoard.getTileSymbol(row+1, col-1) == currPlayerSymbol){
+                        checkForWinner(row+1, col-1, ++currCount, currPlayerSymbol, checkedCells);
+                    }
+                }
+            }
+
+            if(col < gameBoard.getCols()-1){
+                if(!checkedCells[row][col+1] && gameBoard.getTileSymbol(row, col+1) == currPlayerSymbol){
+                    checkForWinner(row, col+1, ++currCount, currPlayerSymbol, checkedCells);
+                }
+
+                if(row > empty){
+                    if(!checkedCells[row-1][col+1] && gameBoard.getTileSymbol(row-1, col+1) == currPlayerSymbol){
+                        checkForWinner(row-1, col+1, ++currCount, currPlayerSymbol, checkedCells);
+                    }
+                }
+
+                if(row < gameBoard.getRows()-1){
+                    if(!checkedCells[row+1][col+1] && gameBoard.getTileSymbol(row+1, col+1) == currPlayerSymbol){
+                        checkForWinner(row+1, col+1, ++currCount, currPlayerSymbol, checkedCells);
+                    }
+                }
+
+            }
+        }
+    }
+
+    public void undoTurn() {
+        if (isTurnHistoryEmpty()) {
+            System.out.println("No moves have been made, so there is no move to undo yet!");
+        } else {
+            Turn lastTurn = turnHistory.get(turnHistory.size());
+
+            turnHistory.remove(lastTurn);
+
+            gameBoard.nullifyCell(lastTurn.row, lastTurn.col);
+    }
     }
 }

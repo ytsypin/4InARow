@@ -24,27 +24,105 @@ public class ConsoleUI implements Serializable {
         console.GameLogic = new Game(5, 7, 10);
 
         boolean exitGame = false;
+        boolean roundOver = false;
 
         MenuOption userSelection = null;
 
         while(!exitGame) {
-            userSelection = getUserMenuSelection();
+            userSelection = console.getUserMenuSelection();
 
-            exitGame = userSelection.makeAction(console.GameLogic);
+            roundOver = userSelection.makeAction(console);
+
+            boolean playAgain = false;
+            String userInput = null;
+            boolean goodInput = false;
+
+            while(!goodInput && !exitGame && roundOver) {
+                if (roundOver) {
+                    System.out.println("Would you like to play again?");
+                    userInput = console.inScanner.nextLine();
+                    if (userInput.equals(ConsoleUI.BigYes) || userInput.equals(ConsoleUI.SmallYes)) {
+                        playAgain = true;
+                        goodInput = true;
+                    } else if (userInput.equals(BigNo) || userInput.equals(SmallNo)) {
+                        playAgain = false;
+                        goodInput = true;
+                    } else {
+                        System.out.println("Please enter a valid input - Y or y for yes, N or n for no.");
+                    }
+                }
+            }
         }
 
         System.out.println("Thank you for playing\nGoodbye!");
     }
 
-    private static MenuOption getUserMenuSelection() {
+    private MenuOption getUserMenuSelection() {
         MenuOption userSelection = null;
+        int userInteger = 0;
         boolean goodSelection = false;
 
+        String userInput = "";
         while(!goodSelection){
             showMenuOptions();
+
+            userInteger = getIntegerInput(9, "Please enter the menu selection");
+
+            userSelection = getAppropriateMenuSelection(userInteger);
+
+            goodSelection = checkSelectionValidity(userSelection);
+
         }
 
         return userSelection;
+    }
+
+    private boolean checkSelectionValidity(MenuOption userSelection) {
+        boolean validSelection = true;
+
+        if(GameLogic == null){ // TODO: Take care of this, add a check in the future method save notifying the user
+            if(userSelection == MenuOption.SAVE){
+                validSelection = false;
+            }
+        }
+
+        return validSelection;
+    }
+
+    private MenuOption getAppropriateMenuSelection(int userInteger) {
+        MenuOption appropriateSelection = null;
+
+        switch (userInteger){
+            case 1:
+                appropriateSelection = MenuOption.LOAD_XML;
+                break;
+            case 2:
+                appropriateSelection = MenuOption.START;
+                break;
+            case 3:
+                appropriateSelection = MenuOption.SETTINGS;
+                break;
+            case 4:
+                appropriateSelection = MenuOption.MAKE_MOVE;
+                break;
+            case 5:
+                appropriateSelection = MenuOption.HISTORY;
+                break;
+            case 6:
+                appropriateSelection = MenuOption.UNDO;
+                break;
+            case 7:
+                appropriateSelection = MenuOption.SAVE;
+                break;
+            case 8:
+                appropriateSelection = MenuOption.LOAD;
+                break;
+            case 9:
+                appropriateSelection = MenuOption.EXIT;
+                break;
+        }
+
+        return appropriateSelection;
     }
 
     private static void showMenuOptions() {
@@ -54,13 +132,12 @@ public class ConsoleUI implements Serializable {
     }
 
     private void startGame() {
-        boolean endGame = false;
-        getBothPlayerData();
+        if(GameLogic == null){
+            System.out.println("Can't start the game yet since no XML file has been loaded yet.");
+        } else {
+            getBothPlayerData();
 
-        showBoard(GameLogic.getBoard());
-        while (!endGame) {
-            makeMove();
-
+            showBoard(GameLogic.getBoard());
         }
     }
 
@@ -97,46 +174,50 @@ public class ConsoleUI implements Serializable {
 
         System.out.println("Please enter the player's name:");
         userInput = inputScanner.nextLine();
-        char symbol;
 
         GameLogic.addPlayer(userInput, playerIsBot);
     }
 
     private void showGameProperties(){
-        int[][] board = GameLogic.getBoard();
-
-        showBoard(board);
-
-        int N = GameLogic.getN();
-
-        System.out.println("The goal is " + N + " in a row!");
-
-        boolean isActive = GameLogic.isActive();
-
-        if(isActive == true){
-            System.out.println("The game is active!");
-            String currentPlayer = GameLogic.getCurrentPlayerName();
-            // get the current player's symbol
-            char currentPlayerSymbol = GameLogic.currentPlayerNumber() == 1? player1Symbol : player2Symbol;
-            int currentPlayerTurns = GameLogic.getCurrentPlayerTurnsPlayed();
-
-            System.out.println("It's " + currentPlayer + "'s turn.");
-            System.out.println("His symbol is " + currentPlayerSymbol);
-            System.out.println("He has taken " + currentPlayerTurns + " turns");
-
-            String otherPlayer = GameLogic.getOtherPlayersName();
-            // get the other player's symbol
-            char otherPlayerSymbol = currentPlayerSymbol == player1Symbol? player2Symbol : player1Symbol;
-            int otherPlayerTurns = GameLogic.getOtherPlayerTurnsPlayed();
-
-            System.out.println(otherPlayer + " is next.");
-            System.out.println("His symbol is " + otherPlayerSymbol);
-            System.out.println("He has taken " + otherPlayerTurns + " turns");
-
-            // get the elapsed time
-
+        if(GameLogic == null){
+            System.out.println("No game has been loaded yet, so there are no settings to show!");
         } else {
-            System.out.println("The game is inactive.");
+            int[][] board = GameLogic.getBoard();
+
+            showBoard(board);
+
+            int N = GameLogic.getN();
+
+            System.out.println("The goal is " + N + " in a row!");
+
+            boolean isActive = GameLogic.isActive();
+
+            if (isActive == true) {
+                System.out.println("The game is active!");
+                String currentPlayer = GameLogic.getCurrentPlayerName();
+                // get the current player's symbol
+                char currentPlayerSymbol = GameLogic.currentPlayerNumber() == 1 ? player1Symbol : player2Symbol;
+                int currentPlayerTurns = GameLogic.getCurrentPlayerTurnsPlayed();
+
+                System.out.println("It's " + currentPlayer + "'s turn.");
+                System.out.println("His symbol is " + currentPlayerSymbol);
+                System.out.println("He has taken " + currentPlayerTurns + " turns");
+
+                String otherPlayer = GameLogic.getOtherPlayersName();
+                // get the other player's symbol
+                char otherPlayerSymbol = currentPlayerSymbol == player1Symbol ? player2Symbol : player1Symbol;
+                int otherPlayerTurns = GameLogic.getOtherPlayerTurnsPlayed();
+
+                System.out.println(otherPlayer + " is next.");
+                System.out.println("His symbol is " + otherPlayerSymbol);
+                System.out.println("He has taken " + otherPlayerTurns + " turns");
+
+                // get the elapsed time
+
+            } else {
+                System.out.println("The game is inactive.");
+            }
+
         }
     }
 
@@ -216,19 +297,23 @@ public class ConsoleUI implements Serializable {
     }
 
     private void makeMove(){
-        if(GameLogic.isCurrentPlayerBot()) {
-            GameLogic.takeBotTurn();
+        if(GameLogic.isActive() == false){
+            System.out.println("The game isn't active yet, so you can't make a move!");
         } else {
-            int col = getPlayerTurn();
-
-            if(GameLogic.moveIsValid(col - 1)) {
-                GameLogic.takePlayerTurn(col - 1);
+            if (GameLogic.isCurrentPlayerBot()) {
+                GameLogic.takeBotTurn();
             } else {
-                System.out.println("The selected column is full, please enter a column which isn't.");
-            }
-        }
+                int col = getIntegerInput(GameLogic.getCols(), "Please enter the column of your choice");
 
-        showBoard(GameLogic.getBoard());
+                if (GameLogic.moveIsValid(col - 1)) {
+                    GameLogic.takePlayerTurn(col - 1);
+                } else {
+                    System.out.println("The selected column is full, please enter a column which isn't.");
+                }
+            }
+
+            showBoard(GameLogic.getBoard());
+        }
     }
 
     private void showTurnHistory(){
@@ -245,30 +330,29 @@ public class ConsoleUI implements Serializable {
         }
     }
 
-    private int getPlayerTurn(){
+    private int getIntegerInput(int valueLimit, String inputPrompt){
         int playerChoice = 0;
         boolean done = false;
         String userInput;
 
         while(!done) {
-            System.out.println("Please enter the column of your choice:(A number between 1 and " + GameLogic.getCols() + ")");
+            System.out.println(inputPrompt + ":(A number between 1 and " + valueLimit + ")");
             userInput = inScanner.nextLine();
 
             try {
                 playerChoice = Integer.parseInt(userInput);
-                if((playerChoice <= 0) || (GameLogic.getCols() < playerChoice)){
-                    System.out.println("Please enter a valid column number between 1 and " + GameLogic.getCols() + ".");
+                if((playerChoice <= 0) || (valueLimit < playerChoice)){
+                    System.out.println("Please enter a valid number between 1 and " + valueLimit + ".");
                 } else {
                     done = true;
                 }
             } catch (NumberFormatException e){
-                System.out.println("Please enter a valid column number between 1 and " + GameLogic.getCols() + ".");
+                System.out.println("Please enter a valid number between 1 and " + valueLimit + ".");
             }
         }
 
         return playerChoice;
     }
-
 
     private enum MenuOption {
         LOAD_XML {
@@ -277,8 +361,8 @@ public class ConsoleUI implements Serializable {
                 return "1)Load XML File";
             }
 
-            boolean makeAction(Game game){
-
+            boolean makeAction(ConsoleUI conosle){
+                // console.loadXMLFile()
                 return false;
             }
         },
@@ -288,8 +372,8 @@ public class ConsoleUI implements Serializable {
                 return "2)Start Game";
             }
 
-            boolean makeAction(Game game){
-
+            boolean makeAction(ConsoleUI conosle){
+                conosle.startGame();
                 return false;
             }
         },
@@ -299,8 +383,8 @@ public class ConsoleUI implements Serializable {
                 return "3)Show Game Settings";
             }
 
-            boolean makeAction(Game game){
-
+            boolean makeAction(ConsoleUI conosle){
+                conosle.showGameProperties();
                 return false;
             }
         },
@@ -310,9 +394,10 @@ public class ConsoleUI implements Serializable {
                 return "4)Make Move";
             }
 
-            boolean makeAction(Game game){
+            boolean makeAction(ConsoleUI conosle){
+                conosle.makeMove();
 
-                return game.isGameOver();
+                return conosle.isGameOver();
             }
         },
         HISTORY{
@@ -321,8 +406,8 @@ public class ConsoleUI implements Serializable {
                 return "5)Show Turn History";
             }
 
-            boolean makeAction(Game game){
-
+            boolean makeAction(ConsoleUI conosle){
+                conosle.showTurnHistory();
                 return false;
             }
         },
@@ -332,8 +417,8 @@ public class ConsoleUI implements Serializable {
                 return "6)Undo Last Turn";
             }
 
-            boolean makeAction(Game game){
-
+            boolean makeAction(ConsoleUI conosle){
+                conosle.undoTurn();
 
                 return false;
             }
@@ -344,7 +429,8 @@ public class ConsoleUI implements Serializable {
                 return "7)Save Game";
             }
 
-            boolean makeAction(Game game){
+            boolean makeAction(ConsoleUI conosle){
+                //conosle.saveGame();
 
                 return false;
             }
@@ -355,9 +441,10 @@ public class ConsoleUI implements Serializable {
                 return "8)Load Game";
             }
 
-            boolean makeAction(Game game){
+            boolean makeAction(ConsoleUI conosle){
+                //conosle.loadGame();
 
-                return game.isGameOver();
+                return conosle.isGameOver();
             }
         },
         EXIT {
@@ -366,12 +453,21 @@ public class ConsoleUI implements Serializable {
                 return "9)Exit Game";
             }
 
-            boolean makeAction(Game game){
+            boolean makeAction(ConsoleUI conosle){
+                //conosle.exitGame();
                 return true;
             }
         };
 
-        abstract boolean makeAction(Game game);
+        abstract boolean makeAction(ConsoleUI conosle);
+    }
+
+    private void undoTurn() {
+        GameLogic.undoTurn();
+    }
+
+    private boolean isGameOver() {
+        return GameLogic.isGameOver();
     }
 
 }
