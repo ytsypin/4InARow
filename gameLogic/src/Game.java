@@ -21,6 +21,10 @@ public class Game implements Serializable {
         return N;
     }
 
+    public boolean isWinnerFound() {
+        return winnerFound;
+    }
+
     public Game(int N, int rows, int cols) {
         this.N = N;
         gameBoard = new Board(rows, cols);

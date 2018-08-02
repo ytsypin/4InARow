@@ -45,7 +45,7 @@ public class Board implements Serializable {
         }
         // if found == false, resRow will be set to fullCol as an impossible value to signify a full column.
         // otherwise, a row should have been found.
-        if(found == false){
+        if(!found){
             resRow = fullCol;
         }
 
