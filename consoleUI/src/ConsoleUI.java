@@ -212,7 +212,7 @@ public class ConsoleUI implements Serializable {
                 System.out.println("His symbol is " + otherPlayerSymbol);
                 System.out.println("He has taken " + otherPlayerTurns + " turns");
 
-                // get the elapsed time
+                // TODO: Show the elapsed time
 
             } else {
                 System.out.println("The game is inactive.");
@@ -361,8 +361,8 @@ public class ConsoleUI implements Serializable {
                 return "1)Load XML File";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                // console.loadXMLFile()
+            boolean makeAction(ConsoleUI console){
+                // TODO: console.loadXMLFile()
                 return false;
             }
         },
@@ -372,8 +372,8 @@ public class ConsoleUI implements Serializable {
                 return "2)Start Game";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.startGame();
+            boolean makeAction(ConsoleUI console){
+                console.startGame();
                 return false;
             }
         },
@@ -383,8 +383,8 @@ public class ConsoleUI implements Serializable {
                 return "3)Show Game Settings";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.showGameProperties();
+            boolean makeAction(ConsoleUI console){
+                console.showGameProperties();
                 return false;
             }
         },
@@ -394,10 +394,10 @@ public class ConsoleUI implements Serializable {
                 return "4)Make Move";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.makeMove();
+            boolean makeAction(ConsoleUI console){
+                console.makeMove();
 
-                return conosle.isGameOver();
+                return console.isGameOver();
             }
         },
         HISTORY{
@@ -406,8 +406,8 @@ public class ConsoleUI implements Serializable {
                 return "5)Show Turn History";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.showTurnHistory();
+            boolean makeAction(ConsoleUI console){
+                console.showTurnHistory();
                 return false;
             }
         },
@@ -417,8 +417,8 @@ public class ConsoleUI implements Serializable {
                 return "6)Undo Last Turn";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.undoTurn();
+            boolean makeAction(ConsoleUI console){
+                console.undoTurn();
 
                 return false;
             }
@@ -429,8 +429,8 @@ public class ConsoleUI implements Serializable {
                 return "7)Save Game";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                //conosle.saveGame();
+            boolean makeAction(ConsoleUI console){
+                // TODO: console.saveGame();
 
                 return false;
             }
@@ -441,10 +441,10 @@ public class ConsoleUI implements Serializable {
                 return "8)Load Game";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                //conosle.loadGame();
+            boolean makeAction(ConsoleUI console){
+                // TODO: console.loadGame();
 
-                return conosle.isGameOver();
+                return console.isGameOver();
             }
         },
         EXIT {
@@ -453,13 +453,13 @@ public class ConsoleUI implements Serializable {
                 return "9)Exit Game";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                //conosle.exitGame();
+            boolean makeAction(ConsoleUI console){
+                //console.exitGame();
                 return true;
             }
         };
 
-        abstract boolean makeAction(ConsoleUI conosle);
+        abstract boolean makeAction(ConsoleUI console);
     }
 
     private void undoTurn() {
