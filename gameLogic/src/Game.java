@@ -27,10 +27,6 @@ public class Game implements Serializable {
         turnHistory = new LinkedList<>();
     }
 
-    public boolean player1AlreadySet() {
-        return player1 == null;
-    }
-
     public void addPlayer(String name, boolean isBot) {
         Player player = new Player(name, isBot);
 
