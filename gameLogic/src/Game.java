@@ -7,7 +7,6 @@ public class Game implements Serializable {
     private Board gameBoard;
     private Player player1 = null;
     private Player player2 = null;
-    private boolean gameSettingsHaveBeenLoaded;
     private boolean isActive = false;
     private List<Turn> turnHistory;
     private Player currentPlayer = null;
@@ -25,7 +24,6 @@ public class Game implements Serializable {
     public Game(int N, int rows, int cols) {
         this.N = N;
         gameBoard = new Board(rows, cols);
-        gameSettingsHaveBeenLoaded = true;
         turnHistory = new LinkedList<>();
     }
 
@@ -181,20 +179,6 @@ public class Game implements Serializable {
 
     private int getFirstOpenRow(int column) {
         return gameBoard.getFirstOpenRow(column);
-    }
-
-    private int getPossibleColumn() {
-        int emptyColumn = 0;
-        boolean done = false;
-        int totalColumns = gameBoard.getCols();
-        for (int i = 0; (i < totalColumns) && (!done); i++) {
-            if (!gameBoard.colIsFull(i)) {
-                emptyColumn = i;
-                done = true;
-            }
-        }
-
-        return emptyColumn;
     }
 
     public void takePlayerTurn(int col) {

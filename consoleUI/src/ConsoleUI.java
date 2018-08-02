@@ -17,7 +17,7 @@ public class ConsoleUI implements Serializable {
     static private char player1Symbol = '$';
     static private char player2Symbol = '@';
 
-    long startTime;
+    private long startTime;
 
     public ConsoleUI() {
         inScanner = new Scanner(System.in);
@@ -66,7 +66,6 @@ public class ConsoleUI implements Serializable {
         int userInteger = 0;
         boolean goodSelection = false;
 
-        String userInput = "";
         while(!goodSelection){
             showMenuOptions();
 
@@ -171,12 +170,11 @@ public class ConsoleUI implements Serializable {
                 goodInput = true;
             }
             else if(userInput.equals(BigNo) || userInput.equals(SmallNo)){
-                playerIsBot = false;
                 goodInput = true;
             } else {
                 System.out.println("Please enter a valid input - Y or y for yes, N or n for no.");
             }
-        } while(goodInput == false);
+        } while(!goodInput);
 
         System.out.println("Please enter the player's name:");
         userInput = inputScanner.nextLine();
@@ -198,7 +196,7 @@ public class ConsoleUI implements Serializable {
 
             boolean isActive = GameLogic.isActive();
 
-            if (isActive == true) {
+            if (isActive) {
                 System.out.println("The game is active!");
                 String currentPlayer = GameLogic.getCurrentPlayerName();
                 // get the current player's symbol
@@ -311,7 +309,7 @@ public class ConsoleUI implements Serializable {
     }
 
     private void makeMove(){
-        if(GameLogic.isActive() == false){
+        if(!GameLogic.isActive()){
             System.out.println("The game isn't active yet, so you can't make a move!");
         } else {
             if (GameLogic.isCurrentPlayerBot()) {
