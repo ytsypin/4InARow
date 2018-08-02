@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,9 +27,9 @@ public class ConsoleUI implements Serializable {
         console.GameLogic = new Game(5, 7, 10);
 
         boolean exitGame = false;
-        boolean roundOver = false;
+        boolean roundOver;
 
-        MenuOption userSelection = null;
+        MenuOption userSelection;
 
         while(!exitGame) { // TODO: Track the exit game option, rearrange the logic
             userSelection = console.getUserMenuSelection();
@@ -38,7 +37,7 @@ public class ConsoleUI implements Serializable {
             roundOver = userSelection.makeAction(console); // TODO: Keep track whether the board is full and round over
 
             boolean playAgain = false;
-            String userInput = null;
+            String userInput;
             boolean goodInput = false;
 
             while(!goodInput && !exitGame && roundOver) {
@@ -63,7 +62,7 @@ public class ConsoleUI implements Serializable {
 
     private MenuOption getUserMenuSelection() {
         MenuOption userSelection = null;
-        int userInteger = 0;
+        int userInteger;
         boolean goodSelection = false;
 
         while(!goodSelection){
