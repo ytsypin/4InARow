@@ -267,6 +267,8 @@ public class Game implements Serializable {
             turnHistory.remove(lastTurn);
 
             gameBoard.nullifyCell(lastTurn.row, lastTurn.col);
-    }
+
+            changeCurrentPlayer();
+        }
     }
 }
