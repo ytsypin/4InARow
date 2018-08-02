@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -15,6 +17,8 @@ public class ConsoleUI implements Serializable {
     static private char player1Symbol = '$';
     static private char player2Symbol = '@';
 
+    long startTime;
+
     public ConsoleUI() {
         inScanner = new Scanner(System.in);
     }
@@ -28,10 +32,10 @@ public class ConsoleUI implements Serializable {
 
         MenuOption userSelection = null;
 
-        while(!exitGame) {
+        while(!exitGame) { // TODO: Track the exit game option, rearrange the logic
             userSelection = console.getUserMenuSelection();
 
-            roundOver = userSelection.makeAction(console);
+            roundOver = userSelection.makeAction(console); // TODO: Keep track whether the board is full and round over
 
             boolean playAgain = false;
             String userInput = null;
@@ -138,6 +142,8 @@ public class ConsoleUI implements Serializable {
             getBothPlayerData();
 
             showBoard(GameLogic.getBoard());
+
+            startTime = System.nanoTime();
         }
     }
 
@@ -212,13 +218,21 @@ public class ConsoleUI implements Serializable {
                 System.out.println("His symbol is " + otherPlayerSymbol);
                 System.out.println("He has taken " + otherPlayerTurns + " turns");
 
-                // TODO: Show the elapsed time
+                showElapsedTime();
 
             } else {
                 System.out.println("The game is inactive.");
             }
 
         }
+    }
+
+    private void showElapsedTime() {
+        long currentTime = System.nanoTime();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM:SS");
+
+        System.out.println("The current elapsed time is: " + sdf.format(new Date(currentTime-startTime)));
     }
 
     private void showBoard(int[][] board){
@@ -303,6 +317,7 @@ public class ConsoleUI implements Serializable {
             if (GameLogic.isCurrentPlayerBot()) {
                 GameLogic.takeBotTurn();
             } else {
+                System.out.println(GameLogic.getCurrentPlayerName() + "'s turn.");
                 int col = getIntegerInput(GameLogic.getCols(), "Please enter the column of your choice");
 
                 if (GameLogic.moveIsValid(col - 1)) {

@@ -1,6 +1,6 @@
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class Game implements Serializable {
     private int N;
@@ -13,9 +13,6 @@ public class Game implements Serializable {
     private Player currentPlayer = null;
     private boolean gameOver = false;
     private boolean winnerFound = false;
-    private static int noMove = -1;
-
-    private long startTime;
 
     public boolean isActive() {
         return isActive;
@@ -28,7 +25,6 @@ public class Game implements Serializable {
     public Game(int N, int rows, int cols) {
         this.N = N;
         gameBoard = new Board(rows, cols);
-        startTime = System.currentTimeMillis();
         gameSettingsHaveBeenLoaded = true;
         turnHistory = new LinkedList<>();
     }
@@ -126,13 +122,28 @@ public class Game implements Serializable {
     }
 
     public void takeBotTurn() {
-        int column = getPossibleColumn();
+        List<Integer> possibleColumns = getListOfAllPossibleColumns();
 
-        if (column == noMove) {
+        if (possibleColumns.size() == 0) {
             gameOver = true;
         } else {
-            implementTurn(column);
+            Random rand = new Random();
+            implementTurn(possibleColumns.get(rand.nextInt(possibleColumns.size())));
         }
+    }
+
+    private List<Integer> getListOfAllPossibleColumns() {
+        List<Integer> possibleColumnList = new ArrayList<>();
+
+        int numOfCols = gameBoard.getCols();
+
+        for(int i = 0; i < numOfCols; i++){
+            if(!gameBoard.colIsFull(i)){
+                possibleColumnList.add(i);
+            }
+        }
+
+        return possibleColumnList;
     }
 
     private void implementTurn(int col) {
@@ -173,7 +184,7 @@ public class Game implements Serializable {
     }
 
     private int getPossibleColumn() {
-        int emptyColumn = noMove;
+        int emptyColumn = 0;
         boolean done = false;
         int totalColumns = gameBoard.getCols();
         for (int i = 0; (i < totalColumns) && (!done); i++) {
