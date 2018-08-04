@@ -4,7 +4,7 @@ import java.util.List;
 
 public class NinaGame implements Serializable {
     private int N;
-    private Board gameBoard;
+    private NinaBoard gameBoard;
     private Participant participant1 = null;
     private Participant participant2 = null;
     private boolean gameSettingsHaveBeenLoaded;
@@ -27,7 +27,7 @@ public class NinaGame implements Serializable {
 
     public NinaGame(int N, int rows, int cols) {
         this.N = N;
-        gameBoard = new Board(rows, cols);
+        gameBoard = new NinaBoard(rows, cols);
         startTime = System.currentTimeMillis();
         gameSettingsHaveBeenLoaded = true;
         turnHistory = new LinkedList<>();
@@ -149,7 +149,7 @@ public class NinaGame implements Serializable {
         boolean checkedCells[][] = new boolean[gameBoard.getRows()][gameBoard.getCols()];
 
         for(int i = 0; i < gameBoard.getRows(); i++){
-            for(int j =0; j < gameBoard.getCols(); j++){
+            for(int j = 0; j < gameBoard.getCols(); j++){
                 checkedCells[i][j] = false;
             }
         }

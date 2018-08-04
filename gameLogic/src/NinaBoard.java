@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
-public class Board implements Serializable {
+public class NinaBoard implements Serializable {
     private static int fullCol = 100;
     private static int emptyTile = 0;
 
@@ -8,7 +8,7 @@ public class Board implements Serializable {
     private int rows;
     private int cols;
 
-    public Board(int rows, int cols){
+    public NinaBoard(int rows, int cols){
         this.rows = rows;
         this.cols = cols;
 
