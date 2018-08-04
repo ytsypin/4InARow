@@ -2,15 +2,15 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Game implements Serializable {
+public class NinaGame implements Serializable {
     private int N;
     private Board gameBoard;
-    private Player player1 = null;
-    private Player player2 = null;
+    private Participant participant1 = null;
+    private Participant participant2 = null;
     private boolean gameSettingsHaveBeenLoaded;
     private boolean isActive = false;
     private List<Turn> turnHistory;
-    private Player currentPlayer = null;
+    private Participant currentParticipant = null;
     private boolean gameOver = false;
     private boolean winnerFound = false;
     private static int noMove = -1;
@@ -25,7 +25,7 @@ public class Game implements Serializable {
         return N;
     }
 
-    public Game(int N, int rows, int cols) {
+    public NinaGame(int N, int rows, int cols) {
         this.N = N;
         gameBoard = new Board(rows, cols);
         startTime = System.currentTimeMillis();
@@ -34,22 +34,22 @@ public class Game implements Serializable {
     }
 
     public boolean player1AlreadySet() {
-        return player1 == null;
+        return participant1 == null;
     }
 
     public void addPlayer(String name, boolean isBot) {
-        Player player = new Player(name, isBot);
+        Participant participant = new Participant(name, isBot);
 
-        if (player1 == null) {
-            player1 = player;
+        if (participant1 == null) {
+            participant1 = participant;
         } else {
-            player2 = player;
+            participant2 = participant;
         }
 
         // Once both players data is in - the game is officially active.
-        if (player2 != null) {
+        if (participant2 != null) {
             isActive = true;
-            currentPlayer = player1;
+            currentParticipant = participant1;
         }
     }
 
@@ -58,28 +58,28 @@ public class Game implements Serializable {
     }
 
     public String getCurrentPlayerName() {
-        return currentPlayer.getName();
+        return currentParticipant.getName();
     }
 
     public int getCurrentPlayerTurnsPlayed() {
-        return currentPlayer.getTurnsPlayed();
+        return currentParticipant.getTurnsPlayed();
     }
 
     public String getOtherPlayersName() {
-        Player otherPlayer = getOtherPlayer();
-        return otherPlayer.getName();
+        Participant otherParticipant = getOtherPlayer();
+        return otherParticipant.getName();
     }
 
     public int getOtherPlayerTurnsPlayed() {
-        Player otherPlayer = getOtherPlayer();
-        return otherPlayer.getTurnsPlayed();
+        Participant otherParticipant = getOtherPlayer();
+        return otherParticipant.getTurnsPlayed();
     }
 
-    private Player getOtherPlayer() {
-        if (currentPlayer == player1) {
-            return player2;
+    private Participant getOtherPlayer() {
+        if (currentParticipant == participant1) {
+            return participant2;
         } else {
-            return player1;
+            return participant1;
         }
     }
 
@@ -92,15 +92,15 @@ public class Game implements Serializable {
     }
 
     public String getPlayer1Name() {
-        return player1.getName();
+        return participant1.getName();
     }
 
     public String getPlayer2Name() {
-        return player2.getName();
+        return participant2.getName();
     }
 
     public int currentPlayerNumber() {
-        return currentPlayer == player1 ? 1 : 2;
+        return currentParticipant == participant1 ? 1 : 2;
     }
 
     public boolean isGameOver() {
@@ -122,7 +122,7 @@ public class Game implements Serializable {
     }
 
     public boolean isCurrentPlayerBot() {
-        return currentPlayer.isBot();
+        return currentParticipant.isBot();
     }
 
     public void takeBotTurn() {
@@ -140,11 +140,11 @@ public class Game implements Serializable {
         int firstCheckedTile = 1;
         int row = getFirstOpenRow(col);
         Turn currTurn = new Turn(row, col);
-        int currPlayerSymbol = currentPlayer.equals(player1) ? 1 : 2;
+        int currPlayerSymbol = currentParticipant.equals(participant1) ? 1 : 2;
         gameBoard.applyTurn(currTurn, currPlayerSymbol);
         turnHistory.add(currTurn);
 
-        currentPlayer.addTurnPlayed();
+        currentParticipant.addTurnPlayed();
 
         boolean checkedCells[][] = new boolean[gameBoard.getRows()][gameBoard.getCols()];
 
@@ -161,10 +161,10 @@ public class Game implements Serializable {
     }
 
     private void changeCurrentPlayer() {
-        if (currentPlayer.equals(player1)) {
-            currentPlayer = player2;
+        if (currentParticipant.equals(participant1)) {
+            currentParticipant = participant2;
         } else {
-            currentPlayer = player1;
+            currentParticipant = participant1;
         }
     }
 

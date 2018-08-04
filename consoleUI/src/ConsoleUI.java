@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleUI implements Serializable {
-    private Game GameLogic;
+    private NinaGame GameLogic;
     private Scanner inScanner;
 
     static private String BigYes = "Y";
@@ -21,7 +21,7 @@ public class ConsoleUI implements Serializable {
 
     public static void main(String[] args){
         ConsoleUI console = new ConsoleUI();
-        console.GameLogic = new Game(5, 7, 10);
+        console.GameLogic = new NinaGame(5, 7, 10);
 
         boolean exitGame = false;
         boolean roundOver = false;
