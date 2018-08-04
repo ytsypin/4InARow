@@ -1,5 +1,6 @@
-import java.awt.*;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -15,6 +16,8 @@ public class ConsoleUI implements Serializable {
     static private char player1Symbol = '$';
     static private char player2Symbol = '@';
 
+    private long startTime;
+
     public ConsoleUI() {
         inScanner = new Scanner(System.in);
     }
@@ -24,17 +27,17 @@ public class ConsoleUI implements Serializable {
         console.GameLogic = new NinaGame(5, 7, 10);
 
         boolean exitGame = false;
-        boolean roundOver = false;
+        boolean roundOver;
 
-        MenuOption userSelection = null;
+        MenuOption userSelection;
 
-        while(!exitGame) {
+        while(!exitGame) { // TODO: Track the exit game option, rearrange the logic
             userSelection = console.getUserMenuSelection();
 
-            roundOver = userSelection.makeAction(console);
+            roundOver = userSelection.makeAction(console); // TODO: Keep track whether the board is full and round over
 
             boolean playAgain = false;
-            String userInput = null;
+            String userInput;
             boolean goodInput = false;
 
             while(!goodInput && !exitGame && roundOver) {
@@ -59,10 +62,9 @@ public class ConsoleUI implements Serializable {
 
     private MenuOption getUserMenuSelection() {
         MenuOption userSelection = null;
-        int userInteger = 0;
+        int userInteger;
         boolean goodSelection = false;
 
-        String userInput = "";
         while(!goodSelection){
             showMenuOptions();
 
@@ -138,6 +140,8 @@ public class ConsoleUI implements Serializable {
             getBothPlayerData();
 
             showBoard(GameLogic.getBoard());
+
+            startTime = System.nanoTime();
         }
     }
 
@@ -165,12 +169,11 @@ public class ConsoleUI implements Serializable {
                 goodInput = true;
             }
             else if(userInput.equals(BigNo) || userInput.equals(SmallNo)){
-                playerIsBot = false;
                 goodInput = true;
             } else {
                 System.out.println("Please enter a valid input - Y or y for yes, N or n for no.");
             }
-        } while(goodInput == false);
+        } while(!goodInput);
 
         System.out.println("Please enter the player's name:");
         userInput = inputScanner.nextLine();
@@ -192,7 +195,7 @@ public class ConsoleUI implements Serializable {
 
             boolean isActive = GameLogic.isActive();
 
-            if (isActive == true) {
+            if (isActive) {
                 System.out.println("The game is active!");
                 String currentPlayer = GameLogic.getCurrentPlayerName();
                 // get the current player's symbol
@@ -212,13 +215,21 @@ public class ConsoleUI implements Serializable {
                 System.out.println("His symbol is " + otherPlayerSymbol);
                 System.out.println("He has taken " + otherPlayerTurns + " turns");
 
-                // get the elapsed time
+                showElapsedTime();
 
             } else {
                 System.out.println("The game is inactive.");
             }
 
         }
+    }
+
+    private void showElapsedTime() {
+        long currentTime = System.nanoTime();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM:SS");
+
+        System.out.println("The current elapsed time is: " + sdf.format(new Date(currentTime-startTime)));
     }
 
     private void showBoard(int[][] board){
@@ -297,12 +308,13 @@ public class ConsoleUI implements Serializable {
     }
 
     private void makeMove(){
-        if(GameLogic.isActive() == false){
+        if(!GameLogic.isActive()){
             System.out.println("The game isn't active yet, so you can't make a move!");
         } else {
             if (GameLogic.isCurrentPlayerBot()) {
                 GameLogic.takeBotTurn();
             } else {
+                System.out.println(GameLogic.getCurrentPlayerName() + "'s turn.");
                 int col = getIntegerInput(GameLogic.getCols(), "Please enter the column of your choice");
 
                 if (GameLogic.moveIsValid(col - 1)) {
@@ -361,8 +373,8 @@ public class ConsoleUI implements Serializable {
                 return "1)Load XML File";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                // console.loadXMLFile()
+            boolean makeAction(ConsoleUI console){
+                // TODO: console.loadXMLFile()
                 return false;
             }
         },
@@ -372,8 +384,8 @@ public class ConsoleUI implements Serializable {
                 return "2)Start Game";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.startGame();
+            boolean makeAction(ConsoleUI console){
+                console.startGame();
                 return false;
             }
         },
@@ -383,8 +395,8 @@ public class ConsoleUI implements Serializable {
                 return "3)Show Game Settings";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.showGameProperties();
+            boolean makeAction(ConsoleUI console){
+                console.showGameProperties();
                 return false;
             }
         },
@@ -394,10 +406,10 @@ public class ConsoleUI implements Serializable {
                 return "4)Make Move";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.makeMove();
+            boolean makeAction(ConsoleUI console){
+                console.makeMove();
 
-                return conosle.isGameOver();
+                return console.isGameOver();
             }
         },
         HISTORY{
@@ -406,8 +418,8 @@ public class ConsoleUI implements Serializable {
                 return "5)Show Turn History";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.showTurnHistory();
+            boolean makeAction(ConsoleUI console){
+                console.showTurnHistory();
                 return false;
             }
         },
@@ -417,8 +429,8 @@ public class ConsoleUI implements Serializable {
                 return "6)Undo Last Turn";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                conosle.undoTurn();
+            boolean makeAction(ConsoleUI console){
+                console.undoTurn();
 
                 return false;
             }
@@ -429,8 +441,8 @@ public class ConsoleUI implements Serializable {
                 return "7)Save Game";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                //conosle.saveGame();
+            boolean makeAction(ConsoleUI console){
+                // TODO: console.saveGame();
 
                 return false;
             }
@@ -441,10 +453,10 @@ public class ConsoleUI implements Serializable {
                 return "8)Load Game";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                //conosle.loadGame();
+            boolean makeAction(ConsoleUI console){
+                // TODO: console.loadGame();
 
-                return conosle.isGameOver();
+                return console.isGameOver();
             }
         },
         EXIT {
@@ -453,13 +465,13 @@ public class ConsoleUI implements Serializable {
                 return "9)Exit Game";
             }
 
-            boolean makeAction(ConsoleUI conosle){
-                //conosle.exitGame();
+            boolean makeAction(ConsoleUI console){
+                //console.exitGame();
                 return true;
             }
         };
 
-        abstract boolean makeAction(ConsoleUI conosle);
+        abstract boolean makeAction(ConsoleUI console);
     }
 
     private void undoTurn() {
