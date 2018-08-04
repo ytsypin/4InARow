@@ -1,4 +1,14 @@
+import Exceptions.InvalidNumberOfColsException;
+import Exceptions.InvalidNumberOfRowsException;
+import Exceptions.InvalidTargetException;
+import resources.generated.Game;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -267,6 +277,43 @@ public class NinaGame implements Serializable {
             turnHistory.remove(lastTurn);
 
             gameBoard.nullifyCell(lastTurn.row, lastTurn.col);
+        }
     }
+
+    public static NinaGame extractXML(String fileName) throws InvalidNumberOfRowsException, InvalidNumberOfColsException, InvalidTargetException {
+        NinaGame retGame = null;
+        try {
+            File file = new File(fileName);
+
+            JAXBContext jaxbContext = JAXBContext.newInstance(Game.class);
+
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+
+            Game game = (Game) ((Unmarshaller) jaxbUnmarshaller).unmarshal(file);
+
+            int rows = game.getBoard().getRows();
+
+            int cols = game.getBoard().getColumns().intValue();
+
+            int N = game.getTarget().intValue();
+
+            if(rows < 5 || 50 < rows){
+                throw new InvalidNumberOfRowsException(rows);
+            }
+
+            if(cols < 6 || 30 < cols){
+                throw new InvalidNumberOfColsException(cols);
+            }
+
+            if(N > Math.min(rows,cols) || N < 2){
+                throw new InvalidTargetException(N);
+            }
+
+            retGame = new NinaGame(N, rows, cols);
+        } catch(JAXBException e){
+            e.printStackTrace();
+        }
+
+        return retGame;
     }
 }
