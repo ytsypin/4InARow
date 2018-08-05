@@ -17,8 +17,8 @@ public class ConsoleUI implements Serializable {
     static private String BigNo = "N";
     static private String SmallNo = "n";
 
-    static private char player1Symbol = '$';
-    static private char player2Symbol = '@';
+    static private char participant1Symbol = '$';
+    static private char participant2Symbol = '@';
 
     private long startTime;
 
@@ -142,7 +142,7 @@ public class ConsoleUI implements Serializable {
         if(gameLogic == null){
             System.out.println("Can't start the game yet since no XML file has been loaded yet.");
         } else {
-            getBothPlayerData();
+            getBothParticipantData();
 
             showBoard(gameLogic.getBoard());
 
@@ -150,27 +150,27 @@ public class ConsoleUI implements Serializable {
         }
     }
 
-    private void getBothPlayerData(){
+    private void getBothParticipantData(){
         Scanner input = new Scanner(System.in);
 
-        System.out.println("Player1:");
-        getPlayerData(input);
+        System.out.println("Participant1:");
+        getParticipantData(input);
 
-        System.out.println("Player2:");
-        getPlayerData(input);
+        System.out.println("Participant2:");
+        getParticipantData(input);
 
     }
 
-    private void getPlayerData(Scanner inputScanner){
+    private void getParticipantData(Scanner inputScanner){
         String userInput;
-        boolean playerIsBot = false;
-        System.out.println("Is the player a bot? (please input Y or y for yes, or N or n for no)");
+        boolean participantIsBot = false;
+        System.out.println("Is the participant a bot? (please input Y or y for yes, or N or n for no)");
         boolean goodInput = false;
 
         do{
             userInput = inputScanner.nextLine();
             if(userInput.equals(BigYes) || userInput.equals(SmallYes)){
-                playerIsBot = true;
+                participantIsBot = true;
                 goodInput = true;
             }
             else if(userInput.equals(BigNo) || userInput.equals(SmallNo)){
@@ -180,10 +180,10 @@ public class ConsoleUI implements Serializable {
             }
         } while(!goodInput);
 
-        System.out.println("Please enter the player's name:");
+        System.out.println("Please enter the participant's name:");
         userInput = inputScanner.nextLine();
 
-        gameLogic.addPlayer(userInput, playerIsBot);
+        gameLogic.addParticipant(userInput, participantIsBot);
     }
 
     private void showGameProperties(){
@@ -202,23 +202,23 @@ public class ConsoleUI implements Serializable {
 
             if (isActive) {
                 System.out.println("The game is active!");
-                String currentPlayer = gameLogic.getCurrentPlayerName();
-                // get the current player's symbol
-                char currentPlayerSymbol = gameLogic.currentPlayerNumber() == 1 ? player1Symbol : player2Symbol;
-                int currentPlayerTurns = gameLogic.getCurrentPlayerTurnsPlayed();
+                String currentParticipant = gameLogic.getCurrentParticipantName();
+                // get the current participant's symbol
+                char currentParticipantSymbol = gameLogic.currentParticipantNumber() == 1 ? participant1Symbol : participant2Symbol;
+                int currentParticipantTurns = gameLogic.getCurrentParticipantTurnsPlayed();
 
-                System.out.println("It's " + currentPlayer + "'s turn.");
-                System.out.println("His symbol is " + currentPlayerSymbol);
-                System.out.println("He has taken " + currentPlayerTurns + " turns");
+                System.out.println("It's " + currentParticipant + "'s turn.");
+                System.out.println("His symbol is " + currentParticipantSymbol);
+                System.out.println("He has taken " + currentParticipantTurns + " turns");
 
-                String otherPlayer = gameLogic.getOtherPlayersName();
-                // get the other player's symbol
-                char otherPlayerSymbol = currentPlayerSymbol == player1Symbol ? player2Symbol : player1Symbol;
-                int otherPlayerTurns = gameLogic.getOtherPlayerTurnsPlayed();
+                String otherParticipant = gameLogic.getOtherParticipantsName();
+                // get the other participant's symbol
+                char otherParticipantSymbol = currentParticipantSymbol == participant1Symbol ? participant2Symbol : participant1Symbol;
+                int otherParticipantTurns = gameLogic.getOtherParticipantTurnsPlayed();
 
-                System.out.println(otherPlayer + " is next.");
-                System.out.println("His symbol is " + otherPlayerSymbol);
-                System.out.println("He has taken " + otherPlayerTurns + " turns");
+                System.out.println(otherParticipant + " is next.");
+                System.out.println("His symbol is " + otherParticipantSymbol);
+                System.out.println("He has taken " + otherParticipantTurns + " turns");
 
                 showElapsedTime();
 
@@ -254,7 +254,7 @@ public class ConsoleUI implements Serializable {
                 if(board[i][j] == 0){
                     tileSymbol = 0;
                 } else {
-                    tileSymbol = board[i][j] == 1 ? player1Symbol : player2Symbol;
+                    tileSymbol = board[i][j] == 1 ? participant1Symbol : participant2Symbol;
                 }
 
                 if(tileSymbol == 0){
@@ -324,14 +324,14 @@ public class ConsoleUI implements Serializable {
         if(!gameLogic.isActive()){
             System.out.println("The game isn't active yet, so you can't make a move!");
         } else {
-            if (gameLogic.isCurrentPlayerBot()) {
+            if (gameLogic.isCurrentParticipantBot()) {
                 gameLogic.takeBotTurn();
             } else {
-                System.out.println(gameLogic.getCurrentPlayerName() + "'s turn.");
+                System.out.println(gameLogic.getCurrentParticipantName() + "'s turn.");
                 int col = getIntegerInput(gameLogic.getCols(), "Please enter the column of your choice");
 
                 if (gameLogic.moveIsValid(col - 1)) {
-                    gameLogic.takePlayerTurn(col - 1);
+                    gameLogic.takeParticipantTurn(col - 1);
                 } else {
                     System.out.println("The selected column is full, please enter a column which isn't.");
                 }
@@ -348,15 +348,15 @@ public class ConsoleUI implements Serializable {
             List<Integer> turnHistory = gameLogic.getTurnHistory();
 
             for(int i = 0 ; i < turnHistory.size(); i++){
-                String currentPlayer = i%2 == 0? gameLogic.getPlayer1Name() : gameLogic.getPlayer2Name();
+                String currentParticipant = i%2 == 0? gameLogic.getParticipant1Name() : gameLogic.getParticipant2Name();
                 int column = turnHistory.get(i);
-                System.out.println((i+1) + ")" + currentPlayer + " Chose column " + column);
+                System.out.println((i+1) + ")" + currentParticipant + " Chose column " + column);
             }
         }
     }
 
     private int getIntegerInput(int valueLimit, String inputPrompt){
-        int playerChoice = 0;
+        int participantChoice = 0;
         boolean done = false;
         String userInput;
 
@@ -365,8 +365,8 @@ public class ConsoleUI implements Serializable {
             userInput = inScanner.nextLine();
 
             try {
-                playerChoice = Integer.parseInt(userInput);
-                if((playerChoice <= 0) || (valueLimit < playerChoice)){
+                participantChoice = Integer.parseInt(userInput);
+                if((participantChoice <= 0) || (valueLimit < participantChoice)){
                     System.out.println("Please enter a valid number between 1 and " + valueLimit + ".");
                 } else {
                     done = true;
@@ -376,7 +376,7 @@ public class ConsoleUI implements Serializable {
             }
         }
 
-        return playerChoice;
+        return participantChoice;
     }
 
     private enum MenuOption {
