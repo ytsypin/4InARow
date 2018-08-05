@@ -1,12 +1,12 @@
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Player implements Serializable {
+public class Participant implements Serializable {
     private String name;
     private boolean isBot;
     private int turnsPlayed;
 
-    public Player(String name, boolean isBot){
+    public Participant(String name, boolean isBot){
         this.name = name;
         this.isBot = isBot;
         this.turnsPlayed = 0;
@@ -28,10 +28,10 @@ public class Player implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Player player = (Player) o;
-        return isBot == player.isBot &&
-                turnsPlayed == player.turnsPlayed &&
-                Objects.equals(name, player.name);
+        Participant participant = (Participant) o;
+        return isBot == participant.isBot &&
+                turnsPlayed == participant.turnsPlayed &&
+                Objects.equals(name, participant.name);
     }
 
     @Override

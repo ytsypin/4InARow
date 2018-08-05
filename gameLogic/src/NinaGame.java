@@ -1,17 +1,31 @@
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import Exceptions.InvalidNumberOfColsException;
+import Exceptions.InvalidNumberOfRowsException;
+import Exceptions.InvalidTargetException;
+import resources.generated.Game;
 
-public class Game implements Serializable {
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.LinkedList;
+import java.util.List;
+
+public class NinaGame implements Serializable {
     private int N;
-    private Board gameBoard;
-    private Player player1 = null;
-    private Player player2 = null;
+    private NinaBoard gameBoard;
+    private Participant participant1 = null;
+    private Participant participant2 = null;
+    private boolean gameSettingsHaveBeenLoaded;
     private boolean isActive = false;
     private List<Turn> turnHistory;
-    private Player currentPlayer = null;
+    private Participant currentParticipant = null;
     private boolean gameOver = false;
     private boolean winnerFound = false;
+    private static int noMove = -1;
+
+    private long startTime;
 
     public boolean isActive() {
         return isActive;
@@ -21,29 +35,31 @@ public class Game implements Serializable {
         return N;
     }
 
-    public boolean isWinnerFound() {
-        return winnerFound;
-    }
-
-    public Game(int N, int rows, int cols) {
+    public NinaGame(int N, int rows, int cols) {
         this.N = N;
-        gameBoard = new Board(rows, cols);
+        gameBoard = new NinaBoard(rows, cols);
+        startTime = System.currentTimeMillis();
+        gameSettingsHaveBeenLoaded = true;
         turnHistory = new LinkedList<>();
     }
 
-    public void addPlayer(String name, boolean isBot) {
-        Player player = new Player(name, isBot);
+    public boolean player1AlreadySet() {
+        return participant1 == null;
+    }
 
-        if (player1 == null) {
-            player1 = player;
+    public void addPlayer(String name, boolean isBot) {
+        Participant participant = new Participant(name, isBot);
+
+        if (participant1 == null) {
+            participant1 = participant;
         } else {
-            player2 = player;
+            participant2 = participant;
         }
 
         // Once both players data is in - the game is officially active.
-        if (player2 != null) {
+        if (participant2 != null) {
             isActive = true;
-            currentPlayer = player1;
+            currentParticipant = participant1;
         }
     }
 
@@ -52,28 +68,28 @@ public class Game implements Serializable {
     }
 
     public String getCurrentPlayerName() {
-        return currentPlayer.getName();
+        return currentParticipant.getName();
     }
 
     public int getCurrentPlayerTurnsPlayed() {
-        return currentPlayer.getTurnsPlayed();
+        return currentParticipant.getTurnsPlayed();
     }
 
     public String getOtherPlayersName() {
-        Player otherPlayer = getOtherPlayer();
-        return otherPlayer.getName();
+        Participant otherParticipant = getOtherPlayer();
+        return otherParticipant.getName();
     }
 
     public int getOtherPlayerTurnsPlayed() {
-        Player otherPlayer = getOtherPlayer();
-        return otherPlayer.getTurnsPlayed();
+        Participant otherParticipant = getOtherPlayer();
+        return otherParticipant.getTurnsPlayed();
     }
 
-    private Player getOtherPlayer() {
-        if (currentPlayer == player1) {
-            return player2;
+    private Participant getOtherPlayer() {
+        if (currentParticipant == participant1) {
+            return participant2;
         } else {
-            return player1;
+            return participant1;
         }
     }
 
@@ -86,15 +102,15 @@ public class Game implements Serializable {
     }
 
     public String getPlayer1Name() {
-        return player1.getName();
+        return participant1.getName();
     }
 
     public String getPlayer2Name() {
-        return player2.getName();
+        return participant2.getName();
     }
 
     public int currentPlayerNumber() {
-        return currentPlayer == player1 ? 1 : 2;
+        return currentParticipant == participant1 ? 1 : 2;
     }
 
     public boolean isGameOver() {
@@ -116,32 +132,17 @@ public class Game implements Serializable {
     }
 
     public boolean isCurrentPlayerBot() {
-        return currentPlayer.isBot();
+        return currentParticipant.isBot();
     }
 
     public void takeBotTurn() {
-        List<Integer> possibleColumns = getListOfAllPossibleColumns();
+        int column = getPossibleColumn();
 
-        if (possibleColumns.size() == 0) {
+        if (column == noMove) {
             gameOver = true;
         } else {
-            Random rand = new Random();
-            implementTurn(possibleColumns.get(rand.nextInt(possibleColumns.size())));
+            implementTurn(column);
         }
-    }
-
-    private List<Integer> getListOfAllPossibleColumns() {
-        List<Integer> possibleColumnList = new ArrayList<>();
-
-        int numOfCols = gameBoard.getCols();
-
-        for(int i = 0; i < numOfCols; i++){
-            if(!gameBoard.colIsFull(i)){
-                possibleColumnList.add(i);
-            }
-        }
-
-        return possibleColumnList;
     }
 
     private void implementTurn(int col) {
@@ -149,16 +150,16 @@ public class Game implements Serializable {
         int firstCheckedTile = 1;
         int row = getFirstOpenRow(col);
         Turn currTurn = new Turn(row, col);
-        int currPlayerSymbol = currentPlayer.equals(player1) ? 1 : 2;
+        int currPlayerSymbol = currentParticipant.equals(participant1) ? 1 : 2;
         gameBoard.applyTurn(currTurn, currPlayerSymbol);
         turnHistory.add(currTurn);
 
-        currentPlayer.addTurnPlayed();
+        currentParticipant.addTurnPlayed();
 
         boolean checkedCells[][] = new boolean[gameBoard.getRows()][gameBoard.getCols()];
 
         for(int i = 0; i < gameBoard.getRows(); i++){
-            for(int j =0; j < gameBoard.getCols(); j++){
+            for(int j = 0; j < gameBoard.getCols(); j++){
                 checkedCells[i][j] = false;
             }
         }
@@ -170,15 +171,29 @@ public class Game implements Serializable {
     }
 
     private void changeCurrentPlayer() {
-        if (currentPlayer.equals(player1)) {
-            currentPlayer = player2;
+        if (currentParticipant.equals(participant1)) {
+            currentParticipant = participant2;
         } else {
-            currentPlayer = player1;
+            currentParticipant = participant1;
         }
     }
 
     private int getFirstOpenRow(int column) {
         return gameBoard.getFirstOpenRow(column);
+    }
+
+    private int getPossibleColumn() {
+        int emptyColumn = noMove;
+        boolean done = false;
+        int totalColumns = gameBoard.getCols();
+        for (int i = 0; (i < totalColumns) && (!done); i++) {
+            if (!gameBoard.colIsFull(i)) {
+                emptyColumn = i;
+                done = true;
+            }
+        }
+
+        return emptyColumn;
     }
 
     public void takePlayerTurn(int col) {
@@ -262,8 +277,43 @@ public class Game implements Serializable {
             turnHistory.remove(lastTurn);
 
             gameBoard.nullifyCell(lastTurn.row, lastTurn.col);
-
-            changeCurrentPlayer();
         }
+    }
+
+    public static NinaGame extractXML(String fileName) throws InvalidNumberOfRowsException, InvalidNumberOfColsException, InvalidTargetException {
+        NinaGame retGame = null;
+        try {
+            File file = new File(fileName);
+
+            JAXBContext jaxbContext = JAXBContext.newInstance(Game.class);
+
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+
+            Game game = (Game) ((Unmarshaller) jaxbUnmarshaller).unmarshal(file);
+
+            int rows = game.getBoard().getRows();
+
+            int cols = game.getBoard().getColumns().intValue();
+
+            int N = game.getTarget().intValue();
+
+            if(rows < 5 || 50 < rows){
+                throw new InvalidNumberOfRowsException(rows);
+            }
+
+            if(cols < 6 || 30 < cols){
+                throw new InvalidNumberOfColsException(cols);
+            }
+
+            if(N > Math.min(rows,cols) || N < 2){
+                throw new InvalidTargetException(N);
+            }
+
+            retGame = new NinaGame(N, rows, cols);
+        } catch(JAXBException e){
+            e.printStackTrace();
+        }
+
+        return retGame;
     }
 }

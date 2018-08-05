@@ -1,0 +1,1 @@
+xjc -p generated raw/NinaRow.xsd
