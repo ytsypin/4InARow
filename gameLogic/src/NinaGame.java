@@ -2,6 +2,7 @@ import Exceptions.InvalidNumberOfColsException;
 import Exceptions.InvalidNumberOfRowsException;
 import Exceptions.InvalidTargetException;
 import resources.generated.Game;
+import resources.generated.GameDescriptor;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -285,17 +286,17 @@ public class NinaGame implements Serializable {
         try {
             File file = new File(fileName);
 
-            JAXBContext jaxbContext = JAXBContext.newInstance(Game.class);
+            JAXBContext jaxbContext = JAXBContext.newInstance(GameDescriptor.class);
 
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
-            Game game = (Game) ((Unmarshaller) jaxbUnmarshaller).unmarshal(file);
+            GameDescriptor gameDescriptor = (GameDescriptor) jaxbUnmarshaller.unmarshal(file);
 
-            int rows = game.getBoard().getRows();
+            int rows = gameDescriptor.getGame().getBoard().getRows();
 
-            int cols = game.getBoard().getColumns().intValue();
+            int cols = gameDescriptor.getGame().getBoard().getColumns().intValue();
 
-            int N = game.getTarget().intValue();
+            int N = gameDescriptor.getGame().getTarget().intValue();
 
             if(rows < 5 || 50 < rows){
                 throw new InvalidNumberOfRowsException(rows);
