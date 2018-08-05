@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 public class ConsoleUI implements Serializable {
     private NinaGame gameLogic;
+    private NinaGame restartCopyGameLogic;
     private Scanner inScanner;
 
     static private String BigYes = "Y";
@@ -492,6 +493,7 @@ public class ConsoleUI implements Serializable {
     private void loadXMLFile(String filename, ConsoleUI console) {
         try {
             console.gameLogic = NinaGame.extractXML(filename);
+            console.restartCopyGameLogic = NinaGame.extractXML(filename);
         } catch (InvalidNumberOfRowsException e) {
             System.out.println("Invalid number of rows: " + e.rowValue);
         } catch (InvalidNumberOfColsException e) {

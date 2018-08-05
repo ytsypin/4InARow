@@ -18,15 +18,12 @@ public class NinaGame implements Serializable {
     private NinaBoard gameBoard;
     private Participant participant1 = null;
     private Participant participant2 = null;
-    private boolean gameSettingsHaveBeenLoaded;
     private boolean isActive = false;
     private List<Turn> turnHistory;
     private Participant currentParticipant = null;
     private boolean gameOver = false;
-    private boolean winnerFound = false;
     private static int noMove = -1;
 
-    private long startTime;
 
     public boolean isActive() {
         return isActive;
@@ -39,8 +36,6 @@ public class NinaGame implements Serializable {
     public NinaGame(int N, int rows, int cols) {
         this.N = N;
         gameBoard = new NinaBoard(rows, cols);
-        startTime = System.currentTimeMillis();
-        gameSettingsHaveBeenLoaded = true;
         turnHistory = new LinkedList<>();
     }
 
@@ -215,7 +210,6 @@ public class NinaGame implements Serializable {
         checkedCells[row][col] = true;
         int empty = 0;
         if(currCount == N){
-            winnerFound = true;
             gameOver = true;
         } else {
             if(row > empty){
