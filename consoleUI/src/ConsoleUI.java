@@ -50,7 +50,7 @@ public class ConsoleUI implements Serializable {
                 } else if (console.gameLogic.isGameOver()) { // No winner was found, there are no more possible moves
                     System.out.println("Seems there are no more possible moves, nobody won!");
                     console.reloadGame(console);
-                } else if (!console.keepPlaying()) {
+                } else if (!console.keepPlaying()) { // Exit was selected
                     System.out.println("Thank you for playing, goodbye!");
                 }
             }
