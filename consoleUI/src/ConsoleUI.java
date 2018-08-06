@@ -12,6 +12,7 @@ public class ConsoleUI implements Serializable {
     private NinaGame gameLogic;
     private NinaGame restartCopyGameLogic;
     private Scanner inScanner;
+    private boolean exitGame;
 
     static private String BigYes = "Y";
     static private String SmallYes = "y";
@@ -25,45 +26,46 @@ public class ConsoleUI implements Serializable {
 
     public ConsoleUI() {
         inScanner = new Scanner(System.in);
+        exitGame = false;
+    }
+
+    public boolean keepPlaying() {
+        return !exitGame;
     }
 
     public static void main(String[] args){
         ConsoleUI console = new ConsoleUI();
 
-        boolean exitGame = false;
-        boolean roundOver;
-
         MenuOption userSelection;
 
-        while(!exitGame) { // TODO: Track the exit game option, rearrange the logic
+        while(console.keepPlaying()) { // TODO: Track the exit game option, rearrange the logic
             userSelection = console.getUserMenuSelection();
 
-            exitGame = userSelection.makeAction(console); // TODO: Keep track whether the board is full and round over
+            userSelection.makeAction(console); // TODO: Keep track whether the board is full and round over
 
-//            boolean playAgain = false;
-//            String userInput;
-//            boolean goodInput = false;
-
-
-            // TODO: When round is over, check if play again - separate into methods?
-//            while(!goodInput && !exitGame && roundOver) {
-//                if (roundOver) {
-//                    System.out.println("Would you like to play again?");
-//                    userInput = console.inScanner.nextLine();
-//                    if (userInput.equals(ConsoleUI.BigYes) || userInput.equals(ConsoleUI.SmallYes)) {
-//                        playAgain = true;
-//                        goodInput = true;
-//                    } else if (userInput.equals(BigNo) || userInput.equals(SmallNo)) {
-//                        playAgain = false;
-//                        goodInput = true;
-//                    } else {
-//                        System.out.println("Please enter a valid input - Y or y for yes, N or n for no.");
-//                    }
-//                }
-//            }
+            if(console.gameLogic != null) {
+                if (console.gameLogic.isWinnerFound()) { // A Winner was found
+                    System.out.println("Congratulations! " + console.gameLogic.getCurrentParticipantName() + " Won!");
+                    console.reloadGame(console);
+                } else if (console.gameLogic.isGameOver()) { // No winner was found, there are no more possible moves
+                    System.out.println("Seems there are no more possible moves, nobody won!");
+                    console.reloadGame(console);
+                } else if (!console.keepPlaying()) {
+                    System.out.println("Thank you for playing, goodbye!");
+                }
+            }
         }
 
         System.out.println("Thank you for playing\nGoodbye!");
+    }
+
+    private void reloadGame(ConsoleUI console) {
+        System.out.println("Reloading previous game's loaded state for replay.");
+        console.restartGame();
+    }
+
+    private void restartGame() {
+        gameLogic = restartCopyGameLogic;
     }
 
     private MenuOption getUserMenuSelection() {
@@ -245,9 +247,9 @@ public class ConsoleUI implements Serializable {
         // each row
         for(int i = 0; i < rows; i++){
             // number of the row
-            if((rows - i) > 9){
+            if((rows - i) > 9 || rows < 9){
                 System.out.print((rows - i) + "|");
-            } else {
+            } else if (rows > 9) {
                 System.out.print((rows - i) + " |");
             }
             for(int j = 0; j < cols; j++){
@@ -325,10 +327,11 @@ public class ConsoleUI implements Serializable {
         if(!gameLogic.isActive()){
             System.out.println("The game isn't active yet, so you can't make a move!");
         } else {
+            System.out.println(gameLogic.getCurrentParticipantName() + "'s turn.");
             if (gameLogic.isCurrentParticipantBot()) {
+                System.out.println("Taking "+ gameLogic.getCurrentParticipantName() + "'s turn, beep boop boop:");
                 gameLogic.takeBotTurn();
             } else {
-                System.out.println(gameLogic.getCurrentParticipantName() + "'s turn.");
                 int col = getIntegerInput(gameLogic.getCols(), "Please enter the column of your choice");
 
                 if (gameLogic.moveIsValid(col - 1)) {
@@ -348,12 +351,15 @@ public class ConsoleUI implements Serializable {
         } else {
             List<Integer> turnHistory = gameLogic.getTurnHistory();
 
+            System.out.println("Turn history up until now is:");
             for(int i = 0 ; i < turnHistory.size(); i++){
                 String currentParticipant = i%2 == 0? gameLogic.getParticipant1Name() : gameLogic.getParticipant2Name();
                 int column = turnHistory.get(i);
-                System.out.println((i+1) + ")" + currentParticipant + " Chose column " + column);
+                System.out.println((i+1) + ")" + "Player " + currentParticipant + " Chose column " + column);
             }
         }
+
+        System.out.println();
     }
 
     private int getIntegerInput(int valueLimit, String inputPrompt){
@@ -387,11 +393,13 @@ public class ConsoleUI implements Serializable {
                 return "1)Load XML File";
             }
 
-            boolean makeAction(ConsoleUI console){
+            void makeAction(ConsoleUI console){
                 System.out.println("Please enter the full path for an XML file:");
                 String filename = console.inScanner.nextLine();
                 console.loadXMLFile(filename, console);
-                return false;
+                if(console.gameLogic != null && console.gameLogic.successfulLoad()){
+                    console.showGameProperties();
+                }
             }
         },
         START {
@@ -400,9 +408,8 @@ public class ConsoleUI implements Serializable {
                 return "2)Start Game";
             }
 
-            boolean makeAction(ConsoleUI console){
+            void makeAction(ConsoleUI console){
                 console.startGame();
-                return false;
             }
         },
         SETTINGS {
@@ -411,9 +418,8 @@ public class ConsoleUI implements Serializable {
                 return "3)Show Game Settings";
             }
 
-            boolean makeAction(ConsoleUI console){
+            void makeAction(ConsoleUI console){
                 console.showGameProperties();
-                return false;
             }
         },
         MAKE_MOVE{
@@ -422,10 +428,8 @@ public class ConsoleUI implements Serializable {
                 return "4)Make Move";
             }
 
-            boolean makeAction(ConsoleUI console){
+            void makeAction(ConsoleUI console){
                 console.makeMove();
-
-                return console.isGameOver();
             }
         },
         HISTORY{
@@ -434,9 +438,8 @@ public class ConsoleUI implements Serializable {
                 return "5)Show Turn History";
             }
 
-            boolean makeAction(ConsoleUI console){
+            void makeAction(ConsoleUI console){
                 console.showTurnHistory();
-                return false;
             }
         },
         UNDO {
@@ -445,10 +448,8 @@ public class ConsoleUI implements Serializable {
                 return "6)Undo Last Turn";
             }
 
-            boolean makeAction(ConsoleUI console){
+            void makeAction(ConsoleUI console){
                 console.undoTurn();
-
-                return false;
             }
         },
         SAVE {
@@ -457,10 +458,8 @@ public class ConsoleUI implements Serializable {
                 return "7)Save Game";
             }
 
-            boolean makeAction(ConsoleUI console){
+            void makeAction(ConsoleUI console){
                 // TODO: console.saveGame();
-
-                return false;
             }
         },
         LOAD{
@@ -469,10 +468,8 @@ public class ConsoleUI implements Serializable {
                 return "8)Load Game";
             }
 
-            boolean makeAction(ConsoleUI console){
+            void makeAction(ConsoleUI console){
                 // TODO: console.loadGame();
-
-                return console.isGameOver();
             }
         },
         EXIT {
@@ -481,13 +478,16 @@ public class ConsoleUI implements Serializable {
                 return "9)Exit Game";
             }
 
-            boolean makeAction(ConsoleUI console){
-                //console.exitGame();
-                return true;
+            void makeAction(ConsoleUI console){
+                console.setExitGame();
             }
         };
 
-        abstract boolean makeAction(ConsoleUI console);
+        abstract void makeAction(ConsoleUI console);
+    }
+
+    private void setExitGame() {
+        exitGame = true;
     }
 
     private void loadXMLFile(String filename, ConsoleUI console) {

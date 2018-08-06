@@ -16,4 +16,5 @@ public class Turn implements Serializable {
     public int getCol() {
         return col;
     }
+
 }
