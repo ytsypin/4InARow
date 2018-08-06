@@ -24,12 +24,12 @@ public class ConsoleUI implements Serializable {
 
     private long startTime;
 
-    public ConsoleUI() {
+    private ConsoleUI() {
         inScanner = new Scanner(System.in);
         exitGame = false;
     }
 
-    public boolean keepPlaying() {
+    private boolean keepPlaying() {
         return !exitGame;
     }
 
@@ -38,10 +38,10 @@ public class ConsoleUI implements Serializable {
 
         MenuOption userSelection;
 
-        while(console.keepPlaying()) { // TODO: Track the exit game option, rearrange the logic
+        while(console.keepPlaying()) {
             userSelection = console.getUserMenuSelection();
 
-            userSelection.makeAction(console); // TODO: Keep track whether the board is full and round over
+            userSelection.makeAction(console);
 
             if(console.gameLogic != null) {
                 if (console.gameLogic.isWinnerFound()) { // A Winner was found
