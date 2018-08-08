@@ -27,10 +27,6 @@ public class ConsoleUI implements Serializable {
         exitGame = false;
     }
 
-    private boolean keepPlaying() {
-        return !exitGame;
-    }
-
     public static void main(String[] args){
         ConsoleUI console = new ConsoleUI();
 
@@ -239,7 +235,6 @@ public class ConsoleUI implements Serializable {
         SimpleDateFormat sdf = new SimpleDateFormat("MM:SS");
 
         System.out.println("The current elapsed time is: " + sdf.format(new Date(currentTime-startTime)));
-        System.out.println();
     }
 
     private void showBoard(int[][] board){
@@ -360,8 +355,8 @@ public class ConsoleUI implements Serializable {
                 System.out.println((i+1) + ")" + "Player " + currentParticipant + " Chose column " + column);
             }
         }
+        showBoard(gameLogic.getBoard());
 
-        System.out.println();
     }
 
     private int getIntegerInput(int valueLimit, String inputPrompt){
@@ -569,5 +564,9 @@ public class ConsoleUI implements Serializable {
             gameLogic.undoTurn();
             showBoard(gameLogic.getBoard());
         }
+    }
+
+    private boolean keepPlaying() {
+        return !exitGame;
     }
 }
