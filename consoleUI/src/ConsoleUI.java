@@ -2,7 +2,7 @@ import Exceptions.InvalidNumberOfColsException;
 import Exceptions.InvalidNumberOfRowsException;
 import Exceptions.InvalidTargetException;
 
-import java.io.Serializable;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -11,7 +11,6 @@ import java.util.Scanner;
 public class ConsoleUI implements Serializable {
     private NinaGame gameLogic;
     private NinaGame restartCopyGameLogic;
-    private Scanner inScanner;
     private boolean exitGame;
 
     static private String BigYes = "Y";
@@ -25,7 +24,6 @@ public class ConsoleUI implements Serializable {
     private long startTime;
 
     private ConsoleUI() {
-        inScanner = new Scanner(System.in);
         exitGame = false;
     }
 
@@ -60,7 +58,31 @@ public class ConsoleUI implements Serializable {
     }
 
     private void reloadGame(ConsoleUI console) {
-        System.out.println("Reloading previous game's loaded state for replay.");
+        String userInput;
+        Scanner inputScanner = new Scanner(System.in);
+        System.out.println("Would you like to display the turn summary for the last game?");
+        boolean showSummary = false;
+        boolean goodInput = false;
+
+        do{
+            userInput = inputScanner.nextLine();
+            if(userInput.equals(BigYes) || userInput.equals(SmallYes)){
+                showSummary = true;
+                goodInput = true;
+            }
+            else if(userInput.equals(BigNo) || userInput.equals(SmallNo)){
+                goodInput = true;
+                showSummary = false;
+            } else {
+                System.out.println("Please enter a valid input - Y or y for yes, N or n for no.");
+            }
+        } while(!goodInput);
+
+        if(showSummary){
+            showTurnHistory();
+        }
+
+        System.out.println("Reloading last game's XML file loaded state for replay.");
         console.restartGame();
     }
 
@@ -69,34 +91,13 @@ public class ConsoleUI implements Serializable {
     }
 
     private MenuOption getUserMenuSelection() {
-        MenuOption userSelection = null;
         int userInteger;
-        boolean goodSelection = false;
 
-        while(!goodSelection){
-            showMenuOptions();
+        showMenuOptions();
 
-            userInteger = getIntegerInput(9, "Please enter the menu selection");
+        userInteger = getIntegerInput(9, "Please enter the menu selection");
 
-            userSelection = getAppropriateMenuSelection(userInteger);
-
-            goodSelection = checkSelectionValidity(userSelection);
-
-        }
-
-        return userSelection;
-    }
-
-    private boolean checkSelectionValidity(MenuOption userSelection) {
-        boolean validSelection = true;
-
-        if(gameLogic == null){ // TODO: Take care of this, add a check in the future method save notifying the user
-            if(userSelection == MenuOption.SAVE){
-                validSelection = false;
-            }
-        }
-
-        return validSelection;
+        return getAppropriateMenuSelection(userInteger);
     }
 
     private MenuOption getAppropriateMenuSelection(int userInteger) {
@@ -238,6 +239,7 @@ public class ConsoleUI implements Serializable {
         SimpleDateFormat sdf = new SimpleDateFormat("MM:SS");
 
         System.out.println("The current elapsed time is: " + sdf.format(new Date(currentTime-startTime)));
+        System.out.println();
     }
 
     private void showBoard(int[][] board){
@@ -324,7 +326,7 @@ public class ConsoleUI implements Serializable {
     }
 
     private void makeMove(){
-        if(!gameLogic.isActive()){
+        if(gameLogic == null || !gameLogic.isActive()){
             System.out.println("The game isn't active yet, so you can't make a move!");
         } else {
             System.out.println(gameLogic.getCurrentParticipantName() + "'s turn.");
@@ -346,7 +348,7 @@ public class ConsoleUI implements Serializable {
     }
 
     private void showTurnHistory(){
-        if(gameLogic.isTurnHistoryEmpty()){
+        if(gameLogic == null || gameLogic.isTurnHistoryEmpty()){
             System.out.println("No turns have been made so far, so there is nothing to show.");
         } else {
             List<Integer> turnHistory = gameLogic.getTurnHistory();
@@ -367,6 +369,8 @@ public class ConsoleUI implements Serializable {
         boolean done = false;
         String userInput;
 
+        Scanner inScanner = new Scanner(System.in);
+
         while(!done) {
             System.out.println(inputPrompt + ":(A number between 1 and " + valueLimit + ")");
             userInput = inScanner.nextLine();
@@ -386,7 +390,7 @@ public class ConsoleUI implements Serializable {
         return participantChoice;
     }
 
-    private enum MenuOption {
+    private enum MenuOption implements Serializable{
         LOAD_XML {
             @Override
             public String toString() {
@@ -394,8 +398,10 @@ public class ConsoleUI implements Serializable {
             }
 
             void makeAction(ConsoleUI console){
+                Scanner inScanner = new Scanner(System.in);
+
                 System.out.println("Please enter the full path for an XML file:");
-                String filename = console.inScanner.nextLine();
+                String filename = inScanner.nextLine();
                 console.loadXMLFile(filename, console);
                 if(console.gameLogic != null && console.gameLogic.successfulLoad()){
                     console.showGameProperties();
@@ -459,7 +465,7 @@ public class ConsoleUI implements Serializable {
             }
 
             void makeAction(ConsoleUI console){
-                // TODO: console.saveGame();
+                console.saveGame();
             }
         },
         LOAD{
@@ -469,7 +475,7 @@ public class ConsoleUI implements Serializable {
             }
 
             void makeAction(ConsoleUI console){
-                // TODO: console.loadGame();
+                console.loadGame();
             }
         },
         EXIT {
@@ -484,6 +490,59 @@ public class ConsoleUI implements Serializable {
         };
 
         abstract void makeAction(ConsoleUI console);
+    }
+
+    private void loadGame() {
+        String filename;
+        System.out.println("Please enter the full path of your .sav save file:");
+        Scanner inScanner = new Scanner(System.in);
+
+        filename = inScanner.nextLine();
+
+        File fileToOpen = new File(filename);
+
+        try (ObjectInputStream in =
+                     new ObjectInputStream(
+                             new FileInputStream(fileToOpen))) {
+            ConsoleUI readObject = (ConsoleUI)in.readObject();
+            this.gameLogic = readObject.gameLogic;
+            this.restartCopyGameLogic = readObject.restartCopyGameLogic;
+
+            showGameProperties();
+        } catch(FileNotFoundException e){
+            System.out.println("Please make sure you entered a valid filename.");
+        }
+        catch(IOException e){
+            System.out.println("There seems to be an issue with the file, please make sure you enterede the correct filename.");
+        }
+        catch(ClassNotFoundException e){
+            System.out.println("Issue loading the file, try again.");
+        }
+    }
+
+    private void saveGame() {
+        if(gameLogic == null){
+            System.out.println("There is no game to save yet.");
+        } else {
+            String fileName;
+
+            System.out.println("Please enter the name for your .dat save file:");
+            Scanner inScanner = new Scanner(System.in);
+
+            fileName = inScanner.nextLine();
+
+            fileName = fileName.concat(".dat");
+            try (ObjectOutputStream out =
+                         new ObjectOutputStream((
+                                 new FileOutputStream(fileName)))) {
+                out.writeObject(this);
+                out.flush();
+            } catch (FileNotFoundException e) {
+                System.out.println("Please make sure you entered a valid filename.");
+            } catch (IOException e) {
+                System.out.println("There seems to be an issue with the file, please make sure you enterede the correct filename.");
+            }
+        }
     }
 
     private void setExitGame() {
@@ -504,11 +563,11 @@ public class ConsoleUI implements Serializable {
     }
 
     private void undoTurn() {
-        gameLogic.undoTurn();
+        if(gameLogic == null){
+            System.out.println("A game has yet to be loaded.");
+        } else {
+            gameLogic.undoTurn();
+            showBoard(gameLogic.getBoard());
+        }
     }
-
-    private boolean isGameOver() {
-        return gameLogic.isGameOver();
-    }
-
 }

@@ -69,7 +69,7 @@ public class NinaBoard implements Serializable {
     }
 
     public void nullifyCell(int row, int col) {
-        boardTiles[row][col] = ' ';
+        boardTiles[row][col] = 0;
     }
 
     public int getTileSymbol(int row, int col){

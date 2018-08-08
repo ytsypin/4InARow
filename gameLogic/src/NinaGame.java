@@ -44,10 +44,6 @@ public class NinaGame implements Serializable {
         return winnerFound;
     }
 
-    public boolean participant1AlreadySet() {
-        return participant1 == null;
-    }
-
     public void addParticipant(String name, boolean isBot) {
         Participant participant = new Participant(name, isBot);
 
@@ -123,10 +119,10 @@ public class NinaGame implements Serializable {
     }
 
     public List<Integer> getTurnHistory() {
-        List<Integer> resultingTurnHistory = new LinkedList<>();
+        LinkedList<Integer> resultingTurnHistory = new LinkedList<>();
 
         for (Turn turn : turnHistory) {
-            ((LinkedList<Integer>) resultingTurnHistory).addLast(turn.getCol());
+            resultingTurnHistory.addLast(turn.getCol());
         }
 
         return resultingTurnHistory;
@@ -162,17 +158,16 @@ public class NinaGame implements Serializable {
                 checkedCells[i][j] = false;
             }
         }
-        int currCount = 0;
 
-        checkForWinningRow(row, col, currCount, currParticipantSymbol, checkedCells);
+        checkForWinningRow(row, col, currParticipantSymbol, checkedCells);
         if(!winnerFound){
-            checkForWinningCol(row, col, currCount, currParticipantSymbol, checkedCells);
+            checkForWinningCol(row, col, currParticipantSymbol, checkedCells);
         }
         if(!winnerFound){
-            checkForWinningAcrossLeft(row,col,currCount,currParticipantSymbol,checkedCells);
+            checkForWinningAcrossLeft(row,col,currParticipantSymbol,checkedCells);
         }
         if(!winnerFound){
-            checkForWinningAcrossRight(row,col,currCount,currParticipantSymbol,checkedCells);
+            checkForWinningAcrossRight(row,col,currParticipantSymbol,checkedCells);
         }
 
         if(!winnerFound) {
@@ -182,94 +177,173 @@ public class NinaGame implements Serializable {
     }
 
     // direction: /
-    private void checkForWinningAcrossRight(int row, int col, int currCount, int currParticipantSymbol, boolean[][] checkedCells) {
-        checkedCells[row][col] = true;
-        int empty = 0;
-        if(currCount == N && !gameOver) {
-            winnerFound = true;
-            gameOver = true;
-        } else if (!gameOver) {
-            if (col > empty) { // col > 0
-                if(row < gameBoard.getRows()-1){
-                    if(!checkedCells[row+1][col-1] && gameBoard.getTileSymbol(row+1, col-1) == currParticipantSymbol){
-                        checkForWinningAcrossRight(row+1, col-1, currCount+1, currParticipantSymbol, checkedCells);
-                    }
-                }
+    private void checkForWinningAcrossRight(int row, int col, int currParticipantSymbol, boolean[][] checkedCells) {
+        int currStreak = 1;
+        boolean keepLooking = true;
+        int lastRow = gameBoard.getRows()-1;
+        int lastCol = gameBoard.getCols()-1;
+
+        // Check the first way starting from the starting cell
+        int currRow = row;
+        int currCol = col;
+        while((currRow < lastRow) && (currCol > 0) && (!winnerFound) && keepLooking){
+            currRow++;
+            currCol--;
+            checkedCells[currRow][currCol] = true;
+            if(gameBoard.getTileSymbol(currRow,currCol) == currParticipantSymbol){
+                currStreak++;
+            } else {
+                keepLooking = false;
             }
 
-            if(col < gameBoard.getCols()-1) {
-                if (row > empty) {
-                    if (!checkedCells[row - 1][col + 1] && gameBoard.getTileSymbol(row - 1, col + 1) == currParticipantSymbol) {
-                        checkForWinningAcrossRight(row - 1, col + 1, currCount+1, currParticipantSymbol, checkedCells);
-                    }
-                }
+            if(currStreak == N){
+                winnerFound = true;
+            }
+        }
+
+        // Get back to the starting cell, check the other way
+        keepLooking = true;
+        currRow = row;
+        currCol = col;
+        while((currRow > 0) && (currCol < lastCol) && !winnerFound && keepLooking){
+            currRow--;
+            currCol++;
+            checkedCells[currRow][currCol] = true;
+            if(gameBoard.getTileSymbol(currRow,currCol) == currParticipantSymbol){
+                currStreak++;
+            } else {
+                keepLooking = false;
+            }
+
+            if(currStreak == N){
+                winnerFound = true;
             }
         }
     }
 
     // direction: \
-    private void checkForWinningAcrossLeft(int row, int col, int currCount, int currParticipantSymbol, boolean[][] checkedCells) {
-        checkedCells[row][col] = true;
-        int empty = 0;
-        if(currCount == N && !gameOver) {
-            winnerFound = true;
-            gameOver = true;
-        } else if (!gameOver) {
-            if (col > empty) { // col > 0
-                if (row > empty) {
-                    if (!checkedCells[row - 1][col - 1] && gameBoard.getTileSymbol(row - 1, col - 1) == currParticipantSymbol) {
-                        checkForWinningAcrossLeft(row - 1, col - 1, currCount+1, currParticipantSymbol, checkedCells);
-                    }
-                }
+    private void checkForWinningAcrossLeft(int row, int col, int currParticipantSymbol, boolean[][] checkedCells) {
+        int currStreak = 1;
+        boolean keepLooking = true;
+        int lastRow = gameBoard.getRows()-1;
+        int lastCol = gameBoard.getCols()-1;
 
-                if(col < gameBoard.getCols()-1) {
-                    if(row < gameBoard.getRows()-1){
-                        if(!checkedCells[row+1][col+1] && gameBoard.getTileSymbol(row+1, col+1) == currParticipantSymbol){
-                            checkForWinningAcrossLeft(row+1, col+1, currCount+1, currParticipantSymbol, checkedCells);
-                        }
-                    }
-                }
+        // Check the first way starting from the starting cell
+        int currRow = row;
+        int currCol = col;
+        while((currRow < lastRow) && (currCol < lastCol) && (!winnerFound) && keepLooking){
+            currRow++;
+            currCol++;
+            checkedCells[currRow][currCol] = true;
+            if(gameBoard.getTileSymbol(currRow,currCol) == currParticipantSymbol){
+                currStreak++;
+            } else {
+                keepLooking = false;
+            }
+
+            if(currStreak == N){
+                winnerFound = true;
+            }
+        }
+
+        // Get back to the starting cell, check the other way
+        keepLooking = true;
+        currRow = row;
+        currCol = col;
+        while((currRow > 0) && (currCol > 0) && !winnerFound && keepLooking){
+            currRow--;
+            currCol--;
+            checkedCells[currRow][currCol] = true;
+            if(gameBoard.getTileSymbol(currRow,currCol) == currParticipantSymbol){
+                currStreak++;
+            } else {
+                keepLooking = false;
+            }
+
+            if(currStreak == N){
+                winnerFound = true;
             }
         }
     }
 
-    private void checkForWinningCol(int row, int col, int currCount, int currParticipantSymbol, boolean[][] checkedCells) {
-        checkedCells[row][col] = true;
-        int empty = 0;
-        if(currCount == N && !gameOver) {
-            winnerFound = true;
-            gameOver = true;
-        } else if (!gameOver) {
-            if (col > empty) {
-                if (!checkedCells[row][col - 1] && gameBoard.getTileSymbol(row, col - 1) == currParticipantSymbol) {
-                    checkForWinningCol(row, col - 1, currCount+1, currParticipantSymbol, checkedCells);
-                }
+    private void checkForWinningCol(int row, int col, int currParticipantSymbol, boolean[][] checkedCells) {
+        int currStreak = 1;
+        boolean keepLooking = true;
+        int lastCol = gameBoard.getCols()-1;
+
+        // Check the first way starting from the starting cell
+        int currRow = row;
+        int currCol = col;
+        while((currCol < lastCol) && (!winnerFound) && keepLooking){
+            currCol++;
+            checkedCells[currRow][currCol] = true;
+            if(gameBoard.getTileSymbol(currRow,currCol) == currParticipantSymbol){
+                currStreak++;
+            } else {
+                keepLooking = false;
             }
 
-            if (col < gameBoard.getCols() - 1) {
-                if(!checkedCells[row][col+1] && gameBoard.getTileSymbol(row, col+1) == currParticipantSymbol){
-                    checkForWinningCol(row, col+1, currCount+1, currParticipantSymbol, checkedCells);
-                }
+            if(currStreak == N){
+                winnerFound = true;
+            }
+        }
+
+        // Get back to the starting cell, check the other way
+        keepLooking = true;
+        currRow = row;
+        currCol = col;
+        while((currCol > 0) && !winnerFound && keepLooking){
+            currCol--;
+            checkedCells[currRow][currCol] = true;
+            if(gameBoard.getTileSymbol(currRow,currCol) == currParticipantSymbol){
+                currStreak++;
+            } else {
+                keepLooking = false;
+            }
+
+            if(currStreak == N){
+                winnerFound = true;
             }
         }
     }
 
-    private void checkForWinningRow(int row, int col, int currCount, int currParticipantSymbol, boolean[][] checkedCells) {
-        checkedCells[row][col] = true;
-        int empty = 0;
-        if(currCount == N && !gameOver) {
-            winnerFound = true;
-            gameOver = true;
-        } else if(!gameOver) {
-            if(row < gameBoard.getRows()-1){
-                if(!checkedCells[row+1][col] && gameBoard.getTileSymbol(row+1, col) == currParticipantSymbol){
-                    checkForWinningRow(row+1, col, currCount+1, currParticipantSymbol, checkedCells);
-                }
+    private void checkForWinningRow(int row, int col, int currParticipantSymbol, boolean[][] checkedCells) {
+        int currStreak = 1;
+        int lastRow = gameBoard.getRows()-1;
+        boolean keepLooking = true;
+
+        // Check the first way starting from the starting cell
+        int currRow = row;
+        int currCol = col;
+        while((currRow < lastRow) && (!winnerFound) && keepLooking){
+            currRow++;
+            checkedCells[currRow][currCol] = true;
+            if(gameBoard.getTileSymbol(currRow,currCol) == currParticipantSymbol){
+                currStreak++;
+            } else {
+                keepLooking = false;
             }
-            if(row > empty){
-                if(!checkedCells[row-1][col] && gameBoard.getTileSymbol(row-1, col) == currParticipantSymbol){
-                    checkForWinningRow(row-1, col, currCount+1, currParticipantSymbol, checkedCells);
-                }
+
+            if(currStreak == N){
+                winnerFound = true;
+            }
+        }
+
+        // Get back to the starting cell, check the other way
+        keepLooking = true;
+        currRow = row;
+        currCol = col;
+        while((currRow > 0) && !winnerFound && keepLooking){
+            currRow--;
+            checkedCells[currRow][currCol] = true;
+            if(gameBoard.getTileSymbol(currRow,currCol) == currParticipantSymbol){
+                currStreak++;
+            } else {
+                keepLooking = false;
+            }
+
+            if(currStreak == N){
+                winnerFound = true;
             }
         }
     }
@@ -298,12 +372,12 @@ public class NinaGame implements Serializable {
     }
 
     private List<Integer> getPossibleMoves() {
-        List<Integer> possibleMoves = new LinkedList<>();
+        LinkedList<Integer> possibleMoves = new LinkedList<>();
         int numOfCols = gameBoard.getCols();
 
         for(int i = 0; i < numOfCols; i++){
             if(moveIsValid(i)){
-                ((LinkedList<Integer>) possibleMoves).addLast(i);
+                possibleMoves.addLast(i);
             }
         }
 
@@ -317,22 +391,19 @@ public class NinaGame implements Serializable {
     }
 
     public boolean moveIsValid(int col) {
-        if ((getFirstOpenRow(col) < 0) || (gameBoard.getRows() < getFirstOpenRow(col))) {
-            return false;
-        } else {
-            return true;
-        }
+        return !((getFirstOpenRow(col) < 0) || (gameBoard.getRows() < getFirstOpenRow(col)));
     }
 
     public void undoTurn() {
         if (isTurnHistoryEmpty()) {
             System.out.println("No moves have been made, so there is no move to undo yet!");
         } else {
-            Turn lastTurn = turnHistory.get(turnHistory.size());
+            Turn lastTurn = turnHistory.get(turnHistory.size()-1);
 
             turnHistory.remove(lastTurn);
 
             gameBoard.nullifyCell(lastTurn.row, lastTurn.col);
+            changeCurrentParticipant();
         }
     }
 
