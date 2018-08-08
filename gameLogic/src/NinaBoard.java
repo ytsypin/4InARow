@@ -52,10 +52,6 @@ public class NinaBoard implements Serializable {
         return resRow;
     }
 
-    public boolean colIsFull(int col){
-        return boardTiles[0][col] != emptyTile;
-    }
-
     public int getRows() {
         return rows;
     }
