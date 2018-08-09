@@ -41,8 +41,8 @@ public class ConsoleUI implements Serializable {
                 if (console.gameLogic.isWinnerFound()) { // A Winner was found
                     System.out.println("Congratulations! " + console.gameLogic.getCurrentParticipantName() + " Won!");
                     console.reloadGame(console);
-                } else if (console.gameLogic.isGameOver()) { // No winner was found, there are no more possible moves
-                    System.out.println("Seems there are no more possible moves, nobody won!");
+                } else if (console.gameLogic.isGameOver()) { // No winner was found, there are no more possible turns
+                    System.out.println("Seems there are no more possible turns, nobody won!");
                     console.reloadGame(console);
                 } else if (!console.keepPlaying()) { // Exit was selected
                     System.out.println("Thank you for playing, goodbye!");
@@ -56,23 +56,13 @@ public class ConsoleUI implements Serializable {
     private void reloadGame(ConsoleUI console) {
         String userInput;
         Scanner inputScanner = new Scanner(System.in);
-        System.out.println("Would you like to display the turn summary for the last game?");
+        System.out.println("Would you like to display the turn summary for the last game? Enter Y/y for yes.");
         boolean showSummary = false;
-        boolean goodInput = false;
 
-        do{
-            userInput = inputScanner.nextLine();
-            if(userInput.equals(BigYes) || userInput.equals(SmallYes)){
-                showSummary = true;
-                goodInput = true;
-            }
-            else if(userInput.equals(BigNo) || userInput.equals(SmallNo)){
-                goodInput = true;
-                showSummary = false;
-            } else {
-                System.out.println("Please enter a valid input - Y or y for yes, N or n for no.");
-            }
-        } while(!goodInput);
+        userInput = inputScanner.nextLine();
+        if(userInput.equals(BigYes) || userInput.equals(SmallYes)){
+            showSummary = true;
+        }
 
         if(showSummary){
             showTurnHistory();
@@ -80,10 +70,6 @@ public class ConsoleUI implements Serializable {
 
         System.out.println("Reloading last game's XML file loaded state for replay.");
         console.restartGame();
-    }
-
-    private void restartGame() {
-        gameLogic = restartCopyGameLogic;
     }
 
     private MenuOption getUserMenuSelection() {
@@ -140,7 +126,7 @@ public class ConsoleUI implements Serializable {
 
     private void startGame() {
         if(gameLogic == null){
-            System.out.println("Can't start the game yet since no XML file has been loaded yet.");
+            System.out.println("Can't start the game since no XML file has been loaded yet.");
         } else {
             getBothParticipantData();
 
@@ -151,13 +137,17 @@ public class ConsoleUI implements Serializable {
     }
 
     private void getBothParticipantData(){
-        Scanner input = new Scanner(System.in);
+        if(gameLogic == null || !gameLogic.isActive()) {
+            Scanner input = new Scanner(System.in);
 
-        System.out.println("Participant1:");
-        getParticipantData(input);
+            System.out.println("Participant1:");
+            getParticipantData(input);
 
-        System.out.println("Participant2:");
-        getParticipantData(input);
+            System.out.println("Participant2:");
+            getParticipantData(input);
+        } else {
+            System.out.println("The game is already active, please finish it before starting another one.");
+        }
 
     }
 
@@ -167,23 +157,22 @@ public class ConsoleUI implements Serializable {
         System.out.println("Is the participant a bot? (please input Y or y for yes, or N or n for no)");
         boolean goodInput = false;
 
-        do{
+        do {
             userInput = inputScanner.nextLine();
-            if(userInput.equals(BigYes) || userInput.equals(SmallYes)){
+            if (userInput.equals(BigYes) || userInput.equals(SmallYes)) {
                 participantIsBot = true;
                 goodInput = true;
-            }
-            else if(userInput.equals(BigNo) || userInput.equals(SmallNo)){
+            } else if (userInput.equals(BigNo) || userInput.equals(SmallNo)) {
                 goodInput = true;
             } else {
                 System.out.println("Please enter a valid input - Y or y for yes, N or n for no.");
             }
-        } while(!goodInput);
+        } while (!goodInput);
 
         System.out.println("Please enter the participant's name:");
         userInput = inputScanner.nextLine();
 
-        gameLogic.addParticipant(userInput, participantIsBot);
+            gameLogic.addParticipant(userInput, participantIsBot);
     }
 
     private void showGameProperties(){
@@ -322,7 +311,7 @@ public class ConsoleUI implements Serializable {
 
     private void makeMove(){
         if(gameLogic == null || !gameLogic.isActive()){
-            System.out.println("The game isn't active yet, so you can't make a move!");
+            System.out.println("The game isn't active yet, so you can't take a turn!");
         } else {
             System.out.println(gameLogic.getCurrentParticipantName() + "'s turn.");
             if (gameLogic.isCurrentParticipantBot()) {
@@ -426,7 +415,7 @@ public class ConsoleUI implements Serializable {
         MAKE_MOVE{
             @Override
             public String toString() {
-                return "4)Make Move";
+                return "4)Take Turn";
             }
 
             void makeAction(ConsoleUI console){
@@ -545,15 +534,19 @@ public class ConsoleUI implements Serializable {
     }
 
     private void loadXMLFile(String filename, ConsoleUI console) {
-        try {
-            console.gameLogic = NinaGame.extractXML(filename);
-            console.restartCopyGameLogic = NinaGame.extractXML(filename);
-        } catch (InvalidNumberOfRowsException e) {
-            System.out.println("Invalid number of rows: " + e.rowValue);
-        } catch (InvalidNumberOfColsException e) {
-            System.out.println("Invalid number of columns: " + e.colValue);
-        } catch (InvalidTargetException e) {
-            System.out.println("Invalid target value: " + e.nValue);
+        if(gameLogic == null || gameLogic.isGameOver()) {
+            try {
+                console.gameLogic = NinaGame.extractXML(filename);
+                console.restartCopyGameLogic = NinaGame.extractXML(filename);
+            } catch (InvalidNumberOfRowsException e) {
+                System.out.println("Invalid number of rows: " + e.rowValue);
+            } catch (InvalidNumberOfColsException e) {
+                System.out.println("Invalid number of columns: " + e.colValue);
+            } catch (InvalidTargetException e) {
+                System.out.println("Invalid target value: " + e.nValue);
+            }
+        } else {
+            System.out.println("The game is already active, can't load XML files until it is over!");
         }
     }
 
@@ -568,5 +561,9 @@ public class ConsoleUI implements Serializable {
 
     private boolean keepPlaying() {
         return !exitGame;
+    }
+
+    private void restartGame() {
+        gameLogic = restartCopyGameLogic;
     }
 }
