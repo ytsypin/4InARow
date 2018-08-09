@@ -70,6 +70,8 @@ public class ConsoleUI implements Serializable {
 
         System.out.println("Reloading last game's XML file loaded state for replay.");
         console.restartGame();
+
+        console.showBoard(console.gameLogic.getBoard());
     }
 
     private MenuOption getUserMenuSelection() {
@@ -341,7 +343,7 @@ public class ConsoleUI implements Serializable {
             for(int i = 0 ; i < turnHistory.size(); i++){
                 String currentParticipant = i%2 == 0? gameLogic.getParticipant1Name() : gameLogic.getParticipant2Name();
                 int column = turnHistory.get(i);
-                System.out.println((i+1) + ")" + "Player " + currentParticipant + " Chose column " + column);
+                System.out.println((i+1) + ")" + "Player " + currentParticipant + " Chose column " + (column+1));
             }
         }
         showBoard(gameLogic.getBoard());
