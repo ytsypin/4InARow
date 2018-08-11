@@ -1,10 +1,12 @@
 import Exceptions.InvalidNumberOfColsException;
 import Exceptions.InvalidNumberOfRowsException;
 import Exceptions.InvalidTargetException;
+import Exceptions.WrongFileException;
 import resources.generated.GameDescriptor;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.Serializable;
@@ -395,20 +397,16 @@ public class NinaGame implements Serializable {
     }
 
     public void undoTurn() {
-        if (isTurnHistoryEmpty()) {
-            System.out.println("No moves have been made, so there is no move to undo yet!");
-        } else {
-            Turn lastTurn = turnHistory.get(turnHistory.size()-1);
+        Turn lastTurn = turnHistory.get(turnHistory.size()-1);
 
-            turnHistory.remove(lastTurn);
+        turnHistory.remove(lastTurn);
 
-            gameBoard.nullifyCell(lastTurn.row, lastTurn.col);
-            changeCurrentParticipant();
-        }
+        gameBoard.nullifyCell(lastTurn.row, lastTurn.col);
+        changeCurrentParticipant();
     }
 
-    public static NinaGame extractXML(String fileName) throws InvalidNumberOfRowsException, InvalidNumberOfColsException, InvalidTargetException {
-        NinaGame retGame = null;
+    public static NinaGame extractXML(String fileName) throws WrongFileException, InvalidNumberOfRowsException, InvalidNumberOfColsException, InvalidTargetException {
+        NinaGame retGame;
         try {
             File file = new File(fileName);
 
@@ -439,7 +437,7 @@ public class NinaGame implements Serializable {
             retGame = new NinaGame(N, rows, cols);
             retGame.loadSuccessful = true;
         } catch(JAXBException e){
-            e.printStackTrace();
+            throw new WrongFileException();
         }
 
         return retGame;

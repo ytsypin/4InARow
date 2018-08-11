@@ -1,12 +1,16 @@
 import Exceptions.InvalidNumberOfColsException;
 import Exceptions.InvalidNumberOfRowsException;
 import Exceptions.InvalidTargetException;
+import Exceptions.WrongFileException;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class ConsoleUI implements Serializable {
     private NinaGame gameLogic;
@@ -21,7 +25,7 @@ public class ConsoleUI implements Serializable {
     static private char participant1Symbol = '$';
     static private char participant2Symbol = '@';
 
-    private long startTime;
+    private Instant startTime;
 
     private ConsoleUI() {
         exitGame = false;
@@ -134,7 +138,7 @@ public class ConsoleUI implements Serializable {
 
             showBoard(gameLogic.getBoard());
 
-            startTime = System.nanoTime();
+            startTime = Instant.now();
         }
     }
 
@@ -221,11 +225,23 @@ public class ConsoleUI implements Serializable {
     }
 
     private void showElapsedTime() {
-        long currentTime = System.nanoTime();
+        Instant finish = Instant.now();
+        long elapsedTime = Duration.between(startTime,finish).toMillis();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MM:SS");
+        long seconds=(elapsedTime/1000)%60;
 
-        System.out.println("The current elapsed time is: " + sdf.format(new Date(currentTime-startTime)));
+        long minutes=((elapsedTime-seconds)/1000)/60;
+
+        String delimiter;
+
+        if(seconds < 10){
+            delimiter = "0";
+        } else {
+            delimiter = "";
+        }
+
+
+        System.out.println("The current elapsed time is: " + minutes + ":" + delimiter + seconds);
     }
 
     private void showBoard(int[][] board){
@@ -328,9 +344,9 @@ public class ConsoleUI implements Serializable {
                     System.out.println("The selected column is full, please enter a column which isn't.");
                 }
             }
-
-            showBoard(gameLogic.getBoard());
         }
+
+        showBoard(gameLogic.getBoard());
     }
 
     private void showTurnHistory(){
@@ -346,8 +362,8 @@ public class ConsoleUI implements Serializable {
                 System.out.println((i+1) + ")" + "Player " + currentParticipant + " Chose column " + (column+1));
             }
         }
-        showBoard(gameLogic.getBoard());
 
+        showBoard(gameLogic.getBoard());
     }
 
     private int getIntegerInput(int valueLimit, String inputPrompt){
@@ -538,14 +554,21 @@ public class ConsoleUI implements Serializable {
     private void loadXMLFile(String filename, ConsoleUI console) {
         if(gameLogic == null || gameLogic.isGameOver()) {
             try {
-                console.gameLogic = NinaGame.extractXML(filename);
-                console.restartCopyGameLogic = NinaGame.extractXML(filename);
+                File file = new File(filename);
+                if(file.exists()) {
+                    console.gameLogic = NinaGame.extractXML(filename);
+                    console.restartCopyGameLogic = NinaGame.extractXML(filename);
+                } else {
+                    System.out.println("Please make sure the specified file path leads to the actual file.");
+                }
             } catch (InvalidNumberOfRowsException e) {
                 System.out.println("Invalid number of rows: " + e.rowValue);
             } catch (InvalidNumberOfColsException e) {
                 System.out.println("Invalid number of columns: " + e.colValue);
             } catch (InvalidTargetException e) {
                 System.out.println("Invalid target value: " + e.nValue);
+            } catch (WrongFileException e){
+                System.out.println("Please make sure you specified the correct XML file.");
             }
         } else {
             System.out.println("The game is already active, can't load XML files until it is over!");
@@ -555,10 +578,12 @@ public class ConsoleUI implements Serializable {
     private void undoTurn() {
         if(gameLogic == null){
             System.out.println("A game has yet to be loaded.");
-        } else {
+        } else if (gameLogic.isTurnHistoryEmpty()) {
+            System.out.println("No turns have been made, so there is no turn to undo yet!");
+        } else{
             gameLogic.undoTurn();
-            showBoard(gameLogic.getBoard());
         }
+        showBoard(gameLogic.getBoard());
     }
 
     private boolean keepPlaying() {
