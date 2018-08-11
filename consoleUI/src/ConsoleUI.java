@@ -344,14 +344,16 @@ public class ConsoleUI implements Serializable {
                     System.out.println("The selected column is full, please enter a column which isn't.");
                 }
             }
+            showBoard(gameLogic.getBoard());
         }
-
-        showBoard(gameLogic.getBoard());
     }
 
     private void showTurnHistory(){
-        if(gameLogic == null || gameLogic.isTurnHistoryEmpty()){
+        if(gameLogic == null){
+            System.out.println("A game has not been loaded yet, so there are no turns to show.");
+        } else if(gameLogic.isTurnHistoryEmpty()){
             System.out.println("No turns have been made so far, so there is nothing to show.");
+            showBoard(gameLogic.getBoard());
         } else {
             List<Integer> turnHistory = gameLogic.getTurnHistory();
 
@@ -361,9 +363,8 @@ public class ConsoleUI implements Serializable {
                 int column = turnHistory.get(i);
                 System.out.println((i+1) + ")" + "Player " + currentParticipant + " Chose column " + (column+1));
             }
+            showBoard(gameLogic.getBoard());
         }
-
-        showBoard(gameLogic.getBoard());
     }
 
     private int getIntegerInput(int valueLimit, String inputPrompt){
@@ -580,10 +581,11 @@ public class ConsoleUI implements Serializable {
             System.out.println("A game has yet to be loaded.");
         } else if (gameLogic.isTurnHistoryEmpty()) {
             System.out.println("No turns have been made, so there is no turn to undo yet!");
+            showBoard(gameLogic.getBoard());
         } else{
             gameLogic.undoTurn();
+            showBoard(gameLogic.getBoard());
         }
-        showBoard(gameLogic.getBoard());
     }
 
     private boolean keepPlaying() {
