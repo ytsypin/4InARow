@@ -436,7 +436,7 @@ public class NinaGame implements Serializable {
 
     public void popOut(int col){
         if(gameBoard.colIsEmpty(col)){
-            // TODO: throw new ColumnIsEmptyException();
+            // to-do: throw new ColumnIsEmptyException();
         } else {
             gameBoard.popOut(col);
 

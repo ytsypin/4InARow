@@ -5,6 +5,7 @@ import Exceptions.WrongFileException;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -545,12 +546,12 @@ public class ConsoleUI implements Serializable {
                                  new FileOutputStream(fileName)))) {
                 out.writeObject(this);
                 out.flush();
-                System.out.println("Game successfully saved at" + this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath() + fileName);
+                System.out.println("Game successfully saved at" + Paths.get("").toAbsolutePath() + "\\" + fileName);
             } catch (FileNotFoundException e) {
                 System.out.println("Please make sure you entered a valid filename.");
             } catch (IOException e) {
                 System.out.println("There seems to be an issue with the file, please make sure you enterede the correct filename.");
-            } catch (URISyntaxException e){}
+            } catch (Exception e){}
         }
     }
 
