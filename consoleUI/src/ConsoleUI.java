@@ -4,6 +4,7 @@ import Exceptions.InvalidTargetException;
 import Exceptions.WrongFileException;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -403,11 +404,15 @@ public class ConsoleUI implements Serializable {
             void makeAction(ConsoleUI console){
                 Scanner inScanner = new Scanner(System.in);
 
-                System.out.println("Please enter the full path for an XML file:");
-                String filename = inScanner.nextLine();
-                console.loadXMLFile(filename, console);
-                if(console.gameLogic != null && console.gameLogic.successfulLoad()){
-                    console.showGameProperties();
+                if(console.gameLogic == null || !console.gameLogic.isActive()) {
+                    System.out.println("Please enter the full path for an XML file:");
+                    String filename = inScanner.nextLine();
+                    console.loadXMLFile(filename, console);
+                    if (console.gameLogic != null && console.gameLogic.successfulLoad()) {
+                        console.showGameProperties();
+                    }
+                } else {
+                    System.out.println("Can't load an XML file while game is active.");
                 }
             }
         },
@@ -540,11 +545,12 @@ public class ConsoleUI implements Serializable {
                                  new FileOutputStream(fileName)))) {
                 out.writeObject(this);
                 out.flush();
+                System.out.println("Game successfully saved at" + this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath() + fileName);
             } catch (FileNotFoundException e) {
                 System.out.println("Please make sure you entered a valid filename.");
             } catch (IOException e) {
                 System.out.println("There seems to be an issue with the file, please make sure you enterede the correct filename.");
-            }
+            } catch (URISyntaxException e){}
         }
     }
 
@@ -553,26 +559,22 @@ public class ConsoleUI implements Serializable {
     }
 
     private void loadXMLFile(String filename, ConsoleUI console) {
-        if(gameLogic == null || gameLogic.isGameOver()) {
-            try {
-                File file = new File(filename);
-                if(file.exists()) {
-                    console.gameLogic = NinaGame.extractXML(filename);
-                    console.restartCopyGameLogic = NinaGame.extractXML(filename);
-                } else {
-                    System.out.println("Please make sure the specified file path leads to the actual file.");
-                }
-            } catch (InvalidNumberOfRowsException e) {
-                System.out.println("Invalid number of rows: " + e.rowValue);
-            } catch (InvalidNumberOfColsException e) {
-                System.out.println("Invalid number of columns: " + e.colValue);
-            } catch (InvalidTargetException e) {
-                System.out.println("Invalid target value: " + e.nValue);
-            } catch (WrongFileException e){
-                System.out.println("Please make sure you specified the correct XML file.");
+        try {
+            File file = new File(filename);
+            if(file.exists()) {
+                console.gameLogic = NinaGame.extractXML(filename);
+                console.restartCopyGameLogic = NinaGame.extractXML(filename);
+            } else {
+                System.out.println("Please make sure the specified file path leads to the actual file.");
             }
-        } else {
-            System.out.println("The game is already active, can't load XML files until it is over!");
+        } catch (InvalidNumberOfRowsException e) {
+            System.out.println("Invalid number of rows: " + e.rowValue);
+        } catch (InvalidNumberOfColsException e) {
+            System.out.println("Invalid number of columns: " + e.colValue);
+        } catch (InvalidTargetException e) {
+            System.out.println("Invalid target value: " + e.nValue);
+        } catch (WrongFileException e){
+            System.out.println("Please make sure you specified the correct XML file.");
         }
     }
 

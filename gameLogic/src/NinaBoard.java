@@ -71,4 +71,20 @@ public class NinaBoard implements Serializable {
     public int getTileSymbol(int row, int col){
         return boardTiles[row][col];
     }
+
+    public void popOut(int col){
+        boardTiles[rows-1][col-1] = emptyTile;
+
+        int currRow = rows-2;
+
+        while(boardTiles[currRow][col-1] != emptyTile){
+            boardTiles[currRow+1][col-1] = boardTiles[currRow][col-1];
+            boardTiles[currRow][col-1] = emptyTile;
+            currRow++;
+        }
+    }
+
+    public boolean colIsEmpty(int col) {
+        return boardTiles[rows-1][col-1] == emptyTile;
+    }
 }

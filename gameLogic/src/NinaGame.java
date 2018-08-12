@@ -161,16 +161,7 @@ public class NinaGame implements Serializable {
             }
         }
 
-        checkForWinningRow(row, col, currParticipantSymbol, checkedCells);
-        if(!winnerFound){
-            checkForWinningCol(row, col, currParticipantSymbol, checkedCells);
-        }
-        if(!winnerFound){
-            checkForWinningAcrossLeft(row,col,currParticipantSymbol,checkedCells);
-        }
-        if(!winnerFound){
-            checkForWinningAcrossRight(row,col,currParticipantSymbol,checkedCells);
-        }
+        checkForWinner(row, col, currParticipantSymbol, checkedCells);
 
         if(!winnerFound) {
             changeCurrentParticipant();
@@ -441,6 +432,50 @@ public class NinaGame implements Serializable {
         }
 
         return retGame;
+    }
+
+    public void popOut(int col){
+        if(gameBoard.colIsEmpty(col)){
+            // TODO: throw new ColumnIsEmptyException();
+        } else {
+            gameBoard.popOut(col);
+
+            int numOfRows = gameBoard.getRows();
+
+            boolean[][] checkedCells = new boolean[gameBoard.getRows()][gameBoard.getCols()];
+
+            int currParticipantSymbol;
+
+            for(int i = numOfRows-1; i > 0 && !winnerFound; i--){
+                nullifyCheckedCells(checkedCells);
+                currParticipantSymbol = gameBoard.getTileSymbol(i, col);
+                checkForWinningAcrossLeft(i, col, currParticipantSymbol, checkedCells);
+                if(winnerFound){
+                    currentParticipant = currParticipantSymbol == 1? participant1 : participant2;
+                }
+            }
+        }
+    }
+
+    private void checkForWinner(int row, int col, int currParticipantSymbol, boolean[][] checkedCells){
+        checkForWinningRow(row, col, currParticipantSymbol, checkedCells);
+        if(!winnerFound){
+            checkForWinningCol(row, col, currParticipantSymbol, checkedCells);
+        }
+        if(!winnerFound){
+            checkForWinningAcrossLeft(row,col,currParticipantSymbol,checkedCells);
+        }
+        if(!winnerFound){
+            checkForWinningAcrossRight(row,col,currParticipantSymbol,checkedCells);
+        }
+    }
+
+    private void nullifyCheckedCells(boolean[][] checkedCells) {
+        for(int i = 0; i < gameBoard.getRows(); i++){
+            for(int j = 0; j < gameBoard.getCols(); j++){
+                checkedCells[i][j] = false;
+            }
+        }
     }
 
     public boolean successfulLoad() {
